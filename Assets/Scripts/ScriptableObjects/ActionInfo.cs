@@ -3,18 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[Flags]
-public enum ActionKeywords
-{
-    Damage = 1,
-    Heal = 2,
-    Cleave = 7,
-    Drain = 4,
-    DrawCard = 5,
-    Momentum = 6,
-    Provoke = 8
-}
-
 [CreateAssetMenu(fileName = "Action", menuName = "ScriptableObjects/Action")]
 public class ActionInfo : ScriptableObject
 {
@@ -23,7 +11,13 @@ public class ActionInfo : ScriptableObject
     [SerializeField] string _description;
     [SerializeField] Sprite _sprite;
     [SerializeField] List<ActionKeywords> _keywords;
-    [SerializeField] List<Vector2Int> _range;
+    [SerializeField] ActionRange _range;
+    [SerializeField] StringBoolDictionary _validTargets = new StringBoolDictionary
+    {
+        {"Targets Enemies", false },
+        {"Targets Allies", false },
+        {"Targets Self", false },
+    };
 
     public bool HasKeyword(ActionKeywords keyword)
     {
@@ -35,5 +29,9 @@ public class ActionInfo : ScriptableObject
     public string GetDescription { get { return _description; } }
     public Sprite GetSprite { get { return _sprite; } }
     public List<ActionKeywords> GetKeywords { get { return _keywords; } }
-    public List <Vector2Int> GetRange { get { return _range; } }
+    public ActionRange GetRange { get { return _range; } }
+    public StringBoolDictionary GetValidTargets { get { return _validTargets; } }
 }
+
+[Serializable]
+public class StringBoolDictionary : SerializableDictionary<string, bool> { }

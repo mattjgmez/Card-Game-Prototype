@@ -9,12 +9,15 @@ public enum TurnState { TurnStart = 0, PlayPhase = 1, Advance = 2, DrawCards = 3
 
 public class GameManager : MonoSingleton<GameManager>
 {
-    public delegate void GameStateDelegate(GameState state);
+    public delegate void GameStateDelegate(GameState turn);
     public event GameStateDelegate StartTurn;
     public event GameStateDelegate PlayPhase;
     public event GameStateDelegate Advance;
     public event GameStateDelegate DrawCards;
     public event GameStateDelegate EndTurn;
+
+    public delegate void test();
+    public event test BoardChanged;
 
     [SerializeField] int _scale = 0;
     [SerializeField] GameState _currentTurn;
@@ -103,6 +106,11 @@ public class GameManager : MonoSingleton<GameManager>
             Debug.Log($"Player 2 Active cards: {activeCards} Empty Frontline: {emptyFrontline}");
             return activeCards > 0 && emptyFrontline;
         }
+    }
+
+    public void InvokeBoardChanged()
+    {
+        BoardChanged?.Invoke();
     }
 
     void IncrementScale(GameState state)

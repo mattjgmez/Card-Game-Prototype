@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using static GameManager;
 
 public class GridManager : MonoSingleton<GridManager>
 {
@@ -28,6 +25,7 @@ public class GridManager : MonoSingleton<GridManager>
 
         spawnedTile.gameObject.name = $"X:{x} Y:{y}";
         spawnedTile.SetGridPosition((int)x, (int)y);
+        spawnedTile.SetIsPlayer1(x < 3);
 
         _grid[(int)x, (int)y] = spawnedTile;
     }
@@ -70,27 +68,6 @@ public class GridManager : MonoSingleton<GridManager>
         }
     }
 
-    public List<Tile> GetTilesInRange(Vector2Int gridPosition, List<Vector2Int> range, bool isPlayer1)
-    {
-        List<Tile> validTiles = new List<Tile>();
-
-        foreach (Vector2Int vector in range)
-        {
-            int x = gridPosition.x + (isPlayer1 ? vector.x : -vector.x);
-            int y = gridPosition.y + (isPlayer1 ? vector.y : -vector.y);
-
-            if (x < 0 || y < 0 || x > 5 || y > 4)
-                continue;
-
-            if (_grid[x, y] != null)
-            {
-                validTiles.Add(_grid[x, y]);
-                Debug.Log($"{_grid[x, y]} set to in range.");
-            }
-        }
-        return validTiles;
-    }
-
     public List<Tile> GetBoardHalf(bool isPlayer1)
     {
         List<Tile> validTiles = new List<Tile>();
@@ -108,3 +85,25 @@ public class GridManager : MonoSingleton<GridManager>
 
     public Tile[,] Grid { get { return _grid; } }
 }
+
+    //Deprecated, replaced by ActionRanges class methods
+    //public List<Tile> GetTilesInRange(Vector2Int gridPosition, List<Vector2Int> range, bool isPlayer1)
+    //{
+    //    List<Tile> validTiles = new List<Tile>();
+
+    //    foreach (Vector2Int vector in range)
+    //    {
+    //        int x = gridPosition.x + (isPlayer1 ? vector.x : -vector.x);
+    //        int y = gridPosition.y + (isPlayer1 ? vector.y : -vector.y);
+
+    //        if (x < 0 || y < 0 || x > 5 || y > 4)
+    //            continue;
+
+    //        if (_grid[x, y] != null)
+    //        {
+    //            validTiles.Add(_grid[x, y]);
+    //            Debug.Log($"{_grid[x, y]} set to in range.");
+    //        }
+    //    }
+    //    return validTiles;
+    //}

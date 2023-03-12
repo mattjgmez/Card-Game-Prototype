@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class Card : MonoBehaviour
 {
@@ -62,7 +63,7 @@ public class Card : MonoBehaviour
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        if (_inHand && Physics.Raycast(ray, out hit, Mathf.Infinity, _boardMask))
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, _boardMask))
         {
             EnterPlay();
 
@@ -133,6 +134,8 @@ public class Card : MonoBehaviour
         _currentSpace.SetCard(this);
 
         OnMovement?.Invoke(this);
+
+        GameManager.Instance.InvokeBoardChanged();
     }
     #endregion
 
@@ -140,17 +143,19 @@ public class Card : MonoBehaviour
     {
         PostCringe();//Unsubscribes events
 
+        GameManager.Instance.InvokeBoardChanged();
+
         _currentSpace.ResetTile();
         _artAnimator.SetTrigger("Death");
         Destroy(gameObject, 1);
     }
 
-    public void TakeDamage(int amount)
+    public void TakeDamage(int amount, bool isDeathTouch)
     {
         _health -= amount;
         UpdateText();
 
-        if (_health <= 0)
+        if (_health <= 0 || isDeathTouch)
             TriggerDeath();
         else
             _artAnimator.SetTrigger("Hurt");
@@ -235,6 +240,8 @@ public class Card : MonoBehaviour
         _actionUIAnimator.SetBool("InHand", false);
         PlayedFromHand?.Invoke(this);
         SubscribeEvents();
+
+        GameManager.Instance.InvokeBoardChanged();
     }
 
     void EnterHand()
@@ -246,6 +253,8 @@ public class Card : MonoBehaviour
         _actionUIAnimator.SetBool("InHand", true);
         ReturnedToHand?.Invoke(this);
         PostCringe();
+
+        GameManager.Instance.InvokeBoardChanged();
     }
 
     void UpdateText()

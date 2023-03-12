@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bd287c3aa76071349975e6c1ebca7a02, type: 3}
-  m_Name: Footman
+  m_Name: Bigman
   m_EditorClassIdentifier: 
-  _name: Footman
+  _name: Bigman
   _health: 1
-  _attack: 1
+  _attack: 3
   _energy: 1
   _cost: 0
   _keywords: []

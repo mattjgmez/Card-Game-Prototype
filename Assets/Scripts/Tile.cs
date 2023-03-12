@@ -10,6 +10,7 @@ public class Tile : MonoBehaviour
     [SerializeField] Card _activeCard;
 
     bool _hasCard = false;
+    public bool _isPlayer_1;
     public Vector2Int _gridPosition;
 
     private void Start()
@@ -59,8 +60,14 @@ public class Tile : MonoBehaviour
         _spriteRenderer.color = color;
     }
 
+    public void SetIsPlayer1(bool value)
+    {
+        _isPlayer_1 = value;
+    }
+
     public Card ActiveCard { get { return _activeCard; } }
     public bool HasCard { get { return _hasCard; } }
+    public bool GetIsPlayer1 { get { return _isPlayer_1; } }
     public Vector2Int GridPosition { get { return _gridPosition; } }
     public Color DefaultColor { get { return _defaultColor; } }
     public Color ActiveColor { get { return _activeColor; } }
