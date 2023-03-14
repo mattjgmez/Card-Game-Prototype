@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class Card : MonoBehaviour
 {
-    [SerializeField] Unit _unit;
+    [SerializeField] CardInfo _info;
     [SerializeField] bool _isPlayer_1;
 
     [SerializeField] GameObject _inHandVisuals;
@@ -36,6 +36,8 @@ public class Card : MonoBehaviour
     {
         InitializeVariables();
         _cardCollider = GetComponent<Collider>();
+
+        _artRenderer.enabled = false;
 
         if (!_isPlayer_1) _artRenderer.flipX = true;
     }
@@ -221,12 +223,12 @@ public class Card : MonoBehaviour
     #region INITIALIZE METHODS
     void InitializeVariables()
     {
-        _power = _unit.GetAttack;
-        _health = _unit.GetHealth;
-        _energy = _unit.GetEnergy;
+        _power = _info.GetAttack;
+        _health = _info.GetHealth;
+        _energy = _info.GetEnergy;
 
-        _maxHealth = _unit.GetHealth;
-        _maxEnergy = _unit.GetEnergy;
+        _maxHealth = _info.GetHealth;
+        _maxEnergy = _info.GetEnergy;
 
         UpdateText();
     }
@@ -238,6 +240,8 @@ public class Card : MonoBehaviour
         _inHandVisuals.SetActive(false);
         _shadowRenderer.enabled = true;
         _actionUIAnimator.SetBool("InHand", false);
+        _artRenderer.enabled = true;
+
         PlayedFromHand?.Invoke(this);
         SubscribeEvents();
 
@@ -251,6 +255,8 @@ public class Card : MonoBehaviour
         _inHandVisuals.SetActive(true);
         _shadowRenderer.enabled = false;
         _actionUIAnimator.SetBool("InHand", true);
+        _artRenderer.enabled = false;
+
         ReturnedToHand?.Invoke(this);
         PostCringe();
 
