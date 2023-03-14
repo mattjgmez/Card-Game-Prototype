@@ -4,7 +4,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Unit", menuName = "ScriptableObjects/Unit")]
-public class Unit : ScriptableObject
+public class CardInfo : ScriptableObject
 {
     [SerializeField] string _name;
     [SerializeField] int _health, _attack, _energy;
