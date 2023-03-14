@@ -14,12 +14,12 @@ public class Background : MonoBehaviour
         GameManager.Instance.Advance -= ScrollBackground;
     }
 
-    void ScrollBackground(GameState state)
+    private void ScrollBackground(GameState state)
     {
         StartCoroutine(ScrollBackgroundCoroutine());
     }
 
-    IEnumerator ScrollBackgroundCoroutine()
+    private IEnumerator ScrollBackgroundCoroutine()
     {
         bool isPlayer1Turn = GameManager.Instance.CurrentTurn == GameState.Player1Turn;
 

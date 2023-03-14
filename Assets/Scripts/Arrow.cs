@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Arrow : MonoBehaviour
 {
-    bool _isSelected;
+    private bool _isSelected;
 
-    void Update()
+    private void Update()
     {
         if (_isSelected)
         {
