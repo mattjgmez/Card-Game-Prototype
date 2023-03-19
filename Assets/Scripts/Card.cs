@@ -15,7 +15,6 @@ public class Card : MonoBehaviour
     [SerializeField] private GameObject _inHandVisuals;
     [SerializeField] private Animator _artAnimator;
     [SerializeField] private TMP_Text _attackText, _healthText, _energyText;
-    [SerializeField] private LayerMask _boardMask, _cardMask;
 
     [Header("On Board Components")]
     [SerializeField] private SpriteRenderer _artRenderer, _shadowRenderer;
@@ -30,15 +29,17 @@ public class Card : MonoBehaviour
     private Tile _currentSpace;
     private Collider _cardCollider;
     private Card _provokingCard;
+    private Arrow _arrow;
 
+    #region FUNCTION METHODS
     private void Awake()
     {
         InitializeVariables();
         _cardCollider = GetComponent<Collider>();
+        _arrow = GameObject.Find("Arrow").GetComponent<Arrow>();
 
         _artRenderer.enabled = false;
-
-        if (!_isPlayer_1) _artRenderer.flipX = true;
+        _artRenderer.flipX = !_isPlayer_1;
 
         _actionHandler.Initialize(_info);
     }
@@ -47,26 +48,33 @@ public class Card : MonoBehaviour
     {
         transform.rotation = Camera.main.transform.rotation;
 
-        if (_isSelected && _currentSpace == null)
+        if (_isSelected)
         {
-            transform.position = GameCursor.WorldPosition + new Vector3(0, .5f, 0);
+            _arrow.IsSelected = true;
+            if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonUp(0))
+            {
+                PlayToTile();
+            }
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                Debug.Log("Card deselected");
+                _isSelected = false;
+                _arrow.IsSelected = false;
+            }
         }
     }
 
-    void OnMouseDown()
+    private void OnMouseDown()
     {
-        if (GameManager.Instance.CurrentTurn == GameState.Player1Turn)
-            _isSelected = true;
+        if (GameManager.Instance.CurrentTurn == GameState.Player1Turn && _inHand)
+            _isSelected = !_isSelected;
     }
 
-    void OnMouseUp()
+    private void PlayToTile()
     {
-        if (!_isSelected)
-            return;
-
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, _boardMask))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Board")))
         {
             EnterPlay();
 
@@ -75,19 +83,10 @@ public class Card : MonoBehaviour
                 ChangeSpace(hitSpace);
 
             _isSelected = false;
+            _arrow.IsSelected = false;
         }
     }
-
-    private void OnMouseOver()
-    {
-        if (Input.GetMouseButtonDown(1))
-        {
-            if (_isSelected)
-            {
-                _isSelected = false;
-            }
-        }
-    }
+    #endregion
 
     #region ADVANCING/MOVEMENT METHODS
     void StartAdvance(GameState state)
@@ -117,8 +116,7 @@ public class Card : MonoBehaviour
         }
 
         Ray ray = new Ray(transform.position, transform.forward);
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, _boardMask))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Board")))
         {
             Tile hitSpace = hit.transform.gameObject.GetComponent<Tile>();
             ChangeSpace(hitSpace);
@@ -133,11 +131,12 @@ public class Card : MonoBehaviour
         }
 
         _currentSpace = targetSpace;
-        transform.position = _currentSpace.transform.position + new Vector3(0, .2f, 0);
+        transform.position = _currentSpace.transform.position + new Vector3(0, .1f, 0);
         _currentSpace.SetCard(this);
     }
     #endregion
 
+    #region STAT METHODS
     void TriggerDeath()
     {
         PostCringe();//Unsubscribes events
@@ -213,6 +212,7 @@ public class Card : MonoBehaviour
         _energy = _maxEnergy;
         SetExhausted(false);
     }
+    #endregion
 
     #region INITIALIZE METHODS
     void InitializeVariables()
