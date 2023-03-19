@@ -5,49 +5,46 @@ using UnityEngine.UI;
 
 public class Action : MonoBehaviour
 {
-    [SerializeField] ActionInfo _actionInfo;
+    [SerializeField] private ActionInfo _actionInfo;
 
-    int _cost;
-    bool _isPlayer_1;
-    bool _isSelected;
-    SpriteRenderer _spriteRenderer;
-    Card _card;
-    List<Tile> _validTiles;
-    Arrow _arrow;
-    LayerMask _boardMask;
+    private int _cost;
+    private bool _isPlayer_1;
+    private bool _isSelected;
+    private Image _image;
+    private Card _card;
+    private List<Tile> _validTiles;
+    private Arrow _arrow;
+    private LayerMask _boardMask;
 
-    void Start()
+    private void Awake()
     {
         _card = GetComponentInParent<Card>();
-        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _image = GetComponent<Image>();
         _arrow = GameObject.Find("Arrow").GetComponent<Arrow>();
         _boardMask = LayerMask.GetMask("Board");
 
-        _spriteRenderer.sprite = _actionInfo.GetSprite;
-
-        _card.PlayedFromHand += InitializeAction;
+        _isPlayer_1 = _card.IsPlayer_1;
     }
 
-    void Update()
+    private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            SetRange();
-        }
-
         if (_isSelected)
         {
             HandleTargetting();
         }
     }
 
-    void OnMouseDown()
+    public void SelectAction()
     {
-        if (GameManager.Instance.CurrentTurn == GameState.Player1Turn)
+        if (GameManager.Instance.CurrentTurn == GameState.Player1Turn && _actionInfo.GetCost <= _card.GetEnergy && !_card.IsExhausted)
+        {
+            SetRange();
             _isSelected = true;
+            GameManager.Instance.ObjectSelected = true;
+        }
     }
 
-    void HandleTargetting()
+    private void HandleTargetting()
     {
         foreach (Tile tile in _validTiles)
         {
@@ -56,7 +53,7 @@ public class Action : MonoBehaviour
 
         _arrow.IsSelected = true;
 
-        if (Input.GetMouseButtonUp(0) && _actionInfo.GetCost <= _card.GetEnergy && !_card.IsExhausted)
+        if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _boardMask))
@@ -92,8 +89,9 @@ public class Action : MonoBehaviour
             }
 
             _isSelected = false;
-            _card.GetActionUIAnimator.SetBool("IsSelected", false);
+            _card.ActionHandler.Selected = false;
             _arrow.IsSelected = false;
+            GameManager.Instance.ObjectSelected = false;
 
             foreach (Tile tile in _validTiles)
                 tile.SetColor(tile.DefaultColor);
@@ -147,23 +145,14 @@ public class Action : MonoBehaviour
     #endregion
 
     #region SETUP METHODS
-    void InitializeAction(Card card)
+    public void SetInfo(ActionInfo info)
     {
-        _isPlayer_1 = _card.IsPlayer_1;
+        _actionInfo = info;
+        _image.sprite = _actionInfo.GetSprite;
         _cost = _actionInfo.GetCost;
     }
 
-    void DisableAction()
-    {
-        _card.PlayedFromHand -= InitializeAction;
-    }
-
-    void OnDisable()
-    {
-        DisableAction();
-    }
-
-    void SetRange()
+    public void SetRange()
     {
         _validTiles?.Clear();
 

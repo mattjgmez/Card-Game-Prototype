@@ -22,9 +22,9 @@ public class Tile : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (_hasCard && !_activeCard.IsExhausted)
+        if (_hasCard && !_activeCard.IsExhausted && !GameManager.Instance.ObjectSelected)
         {
-            _activeCard.GetActionUIAnimator.SetBool("IsSelected", _activeCard.GetActionUIAnimator.GetBool("IsSelected") ? false : true);
+            _activeCard.ActionHandler.Selected = !_activeCard.ActionHandler.Selected;
         }
     }
 

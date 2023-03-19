@@ -19,7 +19,7 @@ MonoBehaviour:
   _cost: 0
   _keywords: []
   _actions:
-  - {fileID: 11400000, guid: beab8037a1216664ab9058076c17df69, type: 2}
+  - {fileID: 11400000, guid: e774900b0223ee04d967dd7160911571, type: 2}
   _sprite: {fileID: 21300000, guid: 300ea1a5869382b43bf6149aba92c4db, type: 3}
   _animController: {fileID: 9100000, guid: 1d4af8c325522f144a3ebdefb8d089f1, type: 2}
   _realm: 0

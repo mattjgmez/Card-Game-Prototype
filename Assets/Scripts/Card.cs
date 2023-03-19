@@ -3,34 +3,33 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 
 public class Card : MonoBehaviour
 {
-    [SerializeField] CardInfo _info;
-    [SerializeField] bool _isPlayer_1;
+    [Header("Card Information")]
+    [SerializeField] private CardInfo _info;
+    [SerializeField] private bool _isPlayer_1;
+    [SerializeField] private ActionHandler _actionHandler;
 
-    [SerializeField] GameObject _inHandVisuals;
-    [SerializeField] SpriteRenderer _artRenderer, _shadowRenderer;
-    [SerializeField] Animator _artAnimator, _actionUIAnimator;
-    [SerializeField] TMP_Text _attackText, _healthText, _energyText;
-    [SerializeField] LayerMask _boardMask, _cardMask;
-    [SerializeField] Color _defaultColor, _exhaustedColor;
+    [Header("Canvas Components")]
+    [SerializeField] private GameObject _inHandVisuals;
+    [SerializeField] private Animator _artAnimator;
+    [SerializeField] private TMP_Text _attackText, _healthText, _energyText;
+    [SerializeField] private LayerMask _boardMask, _cardMask;
 
-    int _power, _health, _energy;
-    int _maxHealth, _maxEnergy;
-    bool _exhausted;
-    bool _inHand = true;
-    bool _isSelected;
-    bool _isProvoked;
-    public Tile _currentSpace;
-    Collider _cardCollider;
-    Card _provokingCard;
+    [Header("On Board Components")]
+    [SerializeField] private SpriteRenderer _artRenderer, _shadowRenderer;
+    [SerializeField] private Color _defaultColor, _exhaustedColor;
 
-    public Action<Card> OnMovement;
-    public Action<Card> PlayedFromHand;
-    public Action<Card> ReturnedToHand;
-    public Action<Card> OnProvoke;
+    private int _power, _health, _energy;
+    private int _maxHealth, _maxEnergy;
+    private bool _isExhausted;
+    private bool _inHand = true;
+    private bool _isSelected;
+    private bool _isProvoked;
+    private Tile _currentSpace;
+    private Collider _cardCollider;
+    private Card _provokingCard;
 
     private void Awake()
     {
@@ -40,6 +39,8 @@ public class Card : MonoBehaviour
         _artRenderer.enabled = false;
 
         if (!_isPlayer_1) _artRenderer.flipX = true;
+
+        _actionHandler.Initialize(_info);
     }
 
     private void Update()
@@ -134,18 +135,12 @@ public class Card : MonoBehaviour
         _currentSpace = targetSpace;
         transform.position = _currentSpace.transform.position + new Vector3(0, .2f, 0);
         _currentSpace.SetCard(this);
-
-        OnMovement?.Invoke(this);
-
-        GameManager.Instance.InvokeBoardChanged();
     }
     #endregion
 
     void TriggerDeath()
     {
         PostCringe();//Unsubscribes events
-
-        GameManager.Instance.InvokeBoardChanged();
 
         _currentSpace.ResetTile();
         _artAnimator.SetTrigger("Death");
@@ -187,8 +182,8 @@ public class Card : MonoBehaviour
 
     public void SetExhausted(bool isExhausted)
     {
-        _exhausted = isExhausted;
-        Debug.Log($"Exhausted set to: {_exhausted}");
+        _isExhausted = isExhausted;
+        Debug.Log($"Exhausted set to: {_isExhausted}");
 
         if (isExhausted)
         {
@@ -208,7 +203,6 @@ public class Card : MonoBehaviour
     {
         _isProvoked = value;
         _provokingCard = provokingCard;
-        OnProvoke?.Invoke(provokingCard);
     }
 
     public void RefreshCard(GameState state)
@@ -239,13 +233,10 @@ public class Card : MonoBehaviour
         _inHand = false;
         _inHandVisuals.SetActive(false);
         _shadowRenderer.enabled = true;
-        _actionUIAnimator.SetBool("InHand", false);
         _artRenderer.enabled = true;
+        _actionHandler.InHand = false;
 
-        PlayedFromHand?.Invoke(this);
         SubscribeEvents();
-
-        GameManager.Instance.InvokeBoardChanged();
     }
 
     void EnterHand()
@@ -254,13 +245,10 @@ public class Card : MonoBehaviour
         _inHand = true;
         _inHandVisuals.SetActive(true);
         _shadowRenderer.enabled = false;
-        _actionUIAnimator.SetBool("InHand", true);
         _artRenderer.enabled = false;
+        _actionHandler.InHand = true;
 
-        ReturnedToHand?.Invoke(this);
         PostCringe();
-
-        GameManager.Instance.InvokeBoardChanged();
     }
 
     void UpdateText()
@@ -296,10 +284,11 @@ public class Card : MonoBehaviour
     public int GetHealth { get { return _health; } }
     public int GetEnergy { get { return _energy; } }
     public bool IsPlayer_1 { get { return _isPlayer_1; } }
-    public bool IsExhausted { get { return _exhausted; } }
+    public bool IsExhausted { get { return _isExhausted; } }
     public bool IsProvoked { get { return _isProvoked; } }
+    public CardInfo GetCardInfo { get { return _info; } }
     public Tile CurrentSpace { get { return _currentSpace; } }
-    public Animator GetActionUIAnimator { get { return _actionUIAnimator; } }
     public Animator GetAnimator { get { return _artAnimator; } }
     public Card GetProvokingCard { get { return _provokingCard; } }
+    public ActionHandler ActionHandler { get { return _actionHandler; } }
 }

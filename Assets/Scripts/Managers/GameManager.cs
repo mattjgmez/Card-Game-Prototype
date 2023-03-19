@@ -16,9 +16,6 @@ public class GameManager : MonoSingleton<GameManager>
     public event GameStateDelegate DrawCards;
     public event GameStateDelegate EndTurn;
 
-    public delegate void test();
-    public event test BoardChanged;
-
     [SerializeField] int _scale = 0;
     [SerializeField] GameState _currentTurn;
     [SerializeField] TurnState _currentTurnState;
@@ -108,11 +105,6 @@ public class GameManager : MonoSingleton<GameManager>
         }
     }
 
-    public void InvokeBoardChanged()
-    {
-        BoardChanged?.Invoke();
-    }
-
     void IncrementScale(GameState state)
     {
         bool player1Turn = state == GameState.Player1Turn;
@@ -157,6 +149,7 @@ public class GameManager : MonoSingleton<GameManager>
         Gizmos.DrawSphere(GameCursor.WorldPosition, .25f);
     }
 
+    public bool ObjectSelected { get; set; }
     public int Scale { get { return _scale; } }
     public GameState CurrentTurn { get { return _currentTurn; } }
     public TurnState CurrentTurnState { get { return _currentTurnState; } }
