@@ -779,7 +779,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4217756547795571270}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.76699996, z: -1.088}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -852,6 +852,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _spriteRenderer: {fileID: 7485855306730511333}
   _parentSpriteRenderer: {fileID: 8333454658132329619}
+  _cardTransform: {fileID: 408724599151317544}
 --- !u!54 &8918772310078033543
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -895,7 +896,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4641844259517895161}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -931,7 +932,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!114 &3101498093424408542
 MonoBehaviour:
@@ -1665,12 +1666,6 @@ MonoBehaviour:
   _attackText: {fileID: 6521858062167475107}
   _healthText: {fileID: 4317868541422333925}
   _energyText: {fileID: 1627926209905895048}
-  _boardMask:
-    serializedVersion: 2
-    m_Bits: 256
-  _cardMask:
-    serializedVersion: 2
-    m_Bits: 128
   _artRenderer: {fileID: 8333454658132329619}
   _shadowRenderer: {fileID: 7485855306730511333}
   _defaultColor: {r: 1, g: 1, b: 1, a: 1}
