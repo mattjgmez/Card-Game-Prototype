@@ -1,41 +1,53 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class HandManager : MonoSingleton<HandManager>
 {
-    [SerializeField] private List<GameObject> objectsToCenter = new List<GameObject>(); // The list of objects to center
-    [SerializeField] private Transform _handPosition;// The point to center the objects around
-    [SerializeField] private float spacing_X, spacing_Y; // The spacing between each object
+    [SerializeField] private List<GameObject> _cardsInHand = new List<GameObject>(); // The list of cards to center
+    [SerializeField] private Vector3 _handPosition;// The point to center the cards around
+    [SerializeField] private float _spacing_X, _spacing_Y; // The spacing between each card
 
-    private void Update()
+    private void Start()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
-            CenterObjects();
+        CenterCardsInHand();
     }
 
     /// <summary>
-    /// Centers the objects around the specified point, with the specified spacing.
+    /// Centers the cards around the specified point, with the specified spacing.
     /// </summary>
-    private void CenterObjects()
+    public void CenterCardsInHand()
     {
-        if (objectsToCenter == null || objectsToCenter.Count == 0)
+        if (_cardsInHand == null || _cardsInHand.Count == 0)
         {
-            Debug.LogWarning("No objects provided to center.");
+            Debug.LogWarning("No cards provided to center.");
             return;
         }
 
-        // Calculate the total width of all objects with their spacing
-        float totalWidth = (objectsToCenter.Count - 1) * spacing_X;
+        // Calculate the total width of all cards with their spacing
+        float totalWidth = (_cardsInHand.Count - 1) * _spacing_X;
 
-        // Calculate the starting position of the first object
-        Vector3 startPosition = _handPosition.position - new Vector3(totalWidth / 2, 0, 0);
+        // Calculate the starting position of the first card
+        Vector3 startPosition = _handPosition - new Vector3(totalWidth / 2, 0, 0);
 
-        // Set the position for each object
-        for (int i = 0; i < objectsToCenter.Count; i++)
+        // Set the position for each card
+        for (int i = 0; i < _cardsInHand.Count; i++)
         {
-            Vector3 objectPosition = startPosition + new Vector3(i * spacing_X, i * spacing_Y, 0);
-            objectsToCenter[i].transform.position = objectPosition;
+            Vector3 cardPosition = startPosition + new Vector3(i * _spacing_X, i * _spacing_Y, 0);
+            _cardsInHand[i].transform.position = cardPosition;
+        }
+    }
+
+    public void RemoveCardFromHand(GameObject cardToRemove)
+    {
+        if (_cardsInHand.Contains(cardToRemove))
+        {
+            _cardsInHand.Remove(cardToRemove);
+        }
+        else
+        {
+            Debug.LogWarning("Card not found in hand.");
         }
     }
 }

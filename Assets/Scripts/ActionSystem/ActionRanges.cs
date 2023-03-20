@@ -12,171 +12,207 @@ public enum ActionRange
 
 public static class ActionRanges
 {
+    /// <summary>
+    /// Returns a list of valid target tiles for a card action with melee range based on the current position and the targeting rules.
+    /// </summary>
+    /// <param name="currentPosition">The current position of the card on the grid, as a Vector2Int.</param>
+    /// <param name="isPlayer1">A boolean indicating whether the card belongs to Player 1.</param>
+    /// <param name="validTargets">A dictionary containing the valid targeting rules for the action, using string keys and bool values.</param>
+    /// <returns>A list of valid target tiles for the card action with melee range.</returns>
     public static List<Tile> Melee(Vector2Int currentPosition, bool isPlayer1, StringBoolDictionary validTargets)
     {
         List<Tile> validTiles = new List<Tile>();
+
+        // Retrieve the targeting rules from the dictionary.
         validTargets.TryGetValue("Targets Enemies", out bool targetsEnemies);
         validTargets.TryGetValue("Targets Allies", out bool targetsAllies);
         validTargets.TryGetValue("Targets Self", out bool targetsSelf);
 
-        int x = currentPosition.x - 1; //Only the y needs to be declared inside the loop
-        for (; x < currentPosition.x + 2; x++)/* and */ for (int y = currentPosition.y - 1; y < currentPosition.y + 2; y++)
-            {
-                if (x < 0 || y < 0 || x > 5 || y > 4)
-                    continue;
+        // Define a range for x and y based on the current position.
+        int xMin = Mathf.Max(currentPosition.x - 1, 0);
+        int xMax = Mathf.Min(currentPosition.x + 1, 5);
+        int yMin = Mathf.Max(currentPosition.y - 1, 0);
+        int yMax = Mathf.Min(currentPosition.y + 1, 4);
 
-                Debug.Log($"Checking tile; {x}:{y}");
+        // Iterate through the tiles within the defined range.
+        for (int x = xMin; x <= xMax; x++)
+        {
+            for (int y = yMin; y <= yMax; y++)
+            {
                 Tile tile = GridManager.Instance.Grid[x, y];
 
+                // If the tile is the current position and self-targeting is allowed, add the tile to the valid tiles.
                 if (tile.GridPosition == currentPosition && targetsSelf)
+                {
                     validTiles.Add(tile);
+                }
+                // If the tile belongs to an enemy and enemy-targeting is allowed, add the tile to the valid tiles.
                 else if (tile.GetIsPlayer1 != isPlayer1 && targetsEnemies)
+                {
                     validTiles.Add(tile);
+                }
+                // If the tile belongs to an ally, is not the current position, and ally-targeting is allowed, add the tile to the valid tiles.
                 else if (tile.GetIsPlayer1 == isPlayer1 && targetsAllies && tile.GridPosition != currentPosition)
+                {
                     validTiles.Add(tile);
+                }
             }
+        }
+
         return validTiles;
     }
 
+    /// <summary>
+    /// Returns a list of valid target tiles for a card action with reach based on the current position and the targeting rules.
+    /// </summary>
+    /// <param name="currentPosition">The current position of the card on the grid, as a Vector2Int.</param>
+    /// <param name="isPlayer1">A boolean indicating whether the card belongs to Player 1.</param>
+    /// <param name="validTargets">A dictionary containing the valid targeting rules for the action, using string keys and bool values.</param>
+    /// <returns>A list of valid target tiles for the card action with reach.</returns>
     public static List<Tile> Reach(Vector2Int currentPosition, bool isPlayer1, StringBoolDictionary validTargets)
     {
         List<Tile> validTiles = new List<Tile>();
+
+        // Retrieve the targeting rules from the dictionary.
         validTargets.TryGetValue("Targets Enemies", out bool targetsEnemies);
         validTargets.TryGetValue("Targets Allies", out bool targetsAllies);
         validTargets.TryGetValue("Targets Self", out bool targetsSelf);
 
-        int x = currentPosition.x - 1; //Only the y needs to be declared inside the loop
-        if(isPlayer1)
-        for (; x < currentPosition.x + 2; x++)/* and */ for (int y = currentPosition.y - 1; y < currentPosition.y + 2; y++)
-            {
-                if (x < 0 || y < 0 || x > 5 || y > 4)
-                    continue;
+        // Define a range for x and y based on the current position.
+        int xMin = Mathf.Max(currentPosition.x - 1, 0);
+        int xMax = Mathf.Min(currentPosition.x + 1, 5);
+        int yMin = Mathf.Max(currentPosition.y - 1, 0);
+        int yMax = Mathf.Min(currentPosition.y + 1, 4);
 
+        // Iterate through the tiles within the defined range.
+        for (int x = xMin; x <= xMax; x++)
+        {
+            for (int y = yMin; y <= yMax; y++)
+            {
                 Tile tile = GridManager.Instance.Grid[x, y];
 
+                // If the tile is the current position and self-targeting is allowed, add the tile to the valid tiles.
                 if (tile.GridPosition == currentPosition && targetsSelf)
-                    validTiles.Add(tile);
-                else if (tile.GetIsPlayer1 != isPlayer1 && targetsEnemies)
                 {
-                    if ((!((x - 1) < 0) || !((x + 1) > 0)) && !tile.ActiveCard)
-                        validTiles.Add(GridManager.Instance.Grid[x + 1, y]);
-
                     validTiles.Add(tile);
                 }
+                // If the tile belongs to an enemy and enemy-targeting is allowed, add the tile to the valid tiles.
+                else if (tile.GetIsPlayer1 != isPlayer1 && targetsEnemies)
+                {
+                    validTiles.Add(tile);
+                }
+                // If the tile belongs to an ally, is not the current position, and ally-targeting is allowed, add the tile to the valid tiles.
                 else if (tile.GetIsPlayer1 == isPlayer1 && targetsAllies && tile.GridPosition != currentPosition)
                 {
-                    if ((!((x - 1) < 0) || !((x + 1) > 0)) && !tile.ActiveCard)
-                        validTiles.Add(GridManager.Instance.Grid[x - 1, y]);
-
                     validTiles.Add(tile);
                 }
             }
-        if (!isPlayer1)
-        for (; x < currentPosition.x + 2; x++)/* and */ for (int y = currentPosition.y - 1; y < currentPosition.y + 2; y++)
-            {
-                if (x < 0 || y < 0 || x > 5 || y > 4)
-                    continue;
-
-                Tile tile = GridManager.Instance.Grid[x, y];
-
-                if (tile.GridPosition == currentPosition && targetsSelf)
-                    validTiles.Add(tile);
-                else if (tile.GetIsPlayer1 != isPlayer1 && targetsEnemies)
-                {
-                    if ((!((x - 1) < 0) || !((x + 1) > 0)) && !tile.ActiveCard)
-                        validTiles.Add(GridManager.Instance.Grid[x - 1, y]);
-
-                    validTiles.Add(tile);
-                }
-                else if (tile.GetIsPlayer1 == isPlayer1 && targetsAllies && tile.GridPosition != currentPosition)
-                {
-                    if ((!((x - 1) < 0) || !((x + 1) > 0)) && !tile.ActiveCard)
-                        validTiles.Add(GridManager.Instance.Grid[x + 1, y]);
-
-                    validTiles.Add(tile);
-                }
-            }
+        }
 
         return validTiles;
     }
 
+    /// <summary>
+    /// Returns a list of valid target tiles for a ranged card action based on the current position and the targeting rules.
+    /// </summary>
+    /// <param name="currentPosition">The current position of the card on the grid, as a Vector2Int.</param>
+    /// <param name="isPlayer1">A boolean indicating whether the card belongs to Player 1.</param>
+    /// <param name="validTargets">A dictionary containing the valid targeting rules for the action, using string keys and bool values.</param>
+    /// <returns>A list of valid target tiles for the ranged card action.</returns>
     public static List<Tile> Ranged(Vector2Int currentPosition, bool isPlayer1, StringBoolDictionary validTargets)
     {
+        // If the card is on its frontline, treat it as a Reach action instead of Ranged.
         if (currentPosition.x == (isPlayer1 ? 2 : 3))
             return Reach(currentPosition, isPlayer1, validTargets);
 
         List<Tile> validTiles = new List<Tile>();
+
+        // Retrieve the targeting rules from the dictionary.
         validTargets.TryGetValue("Targets Enemies", out bool targetsEnemies);
         validTargets.TryGetValue("Targets Allies", out bool targetsAllies);
         validTargets.TryGetValue("Targets Self", out bool targetsSelf);
 
+        // Set up loop variables based on the player.
         int enemyFrontline = isPlayer1 ? 3 : 2;
-        if (isPlayer1)
-            for (int x = 0; x < enemyFrontline + 1; x++)
-                for (int y = 0; y < 5; y++)
+        int startX = isPlayer1 ? 0 : 5;
+        int endX = isPlayer1 ? enemyFrontline + 1 : enemyFrontline - 1;
+        int stepX = isPlayer1 ? 1 : -1;
+
+        // Iterate through the grid based on the player's side, considering only the side up to and including the enemy frontline.
+        for (int x = startX; isPlayer1 ? x < endX : x > endX; x += stepX)
+        {
+            for (int y = 0; y < 5; y++)
+            {
+                Tile tile = GridManager.Instance.Grid[x, y];
+
+                // If the tile is the current position and self-targeting is allowed, add the tile to the valid tiles.
+                if (tile.GridPosition == currentPosition && targetsSelf)
                 {
-                    if (x < 0 || y < 0 || x > 5 || y > 4)
-                        continue;
-
-                    Tile tile = GridManager.Instance.Grid[x, y];
-
-                    if (tile.GridPosition == currentPosition && targetsSelf)
-                        validTiles.Add(tile);
-                    else if (tile.GetIsPlayer1 != isPlayer1 && targetsEnemies)
-                    {
-                        if ((!((x - 1) < 0) || !((x + 1) > 0)) && !tile.ActiveCard)
-                            validTiles.Add(GridManager.Instance.Grid[x + 1, y]);
-
-                        validTiles.Add(tile);
-                    }
-                    else if (tile.GetIsPlayer1 == isPlayer1 && targetsAllies && tile.GridPosition != currentPosition)
-                        validTiles.Add(tile);
+                    validTiles.Add(tile);
                 }
-        else
-            for (int x = 5; x > enemyFrontline - 1; x--)
-                for (int y = 0; y < 5; y++)
+                // If the tile belongs to an enemy and enemy-targeting is allowed,
+                // add the tile and its neighbor (if valid) to the valid tiles.
+                else if (tile.GetIsPlayer1 != isPlayer1 && targetsEnemies)
                 {
-                    if (x < 0 || y < 0 || x > 5 || y > 4)
-                        continue;
-
-                    Tile tile = GridManager.Instance.Grid[x, y];
-
-                    if (tile.GridPosition == currentPosition && targetsSelf)
-                        validTiles.Add(tile);
-                    else if (tile.GetIsPlayer1 != isPlayer1 && targetsEnemies)
+                    int neighborX = isPlayer1 ? x + 1 : x - 1;
+                    if (neighborX >= 0 && neighborX <= 5 && !tile.ActiveCard)
                     {
-                        if ((!((x - 1) < 0) || !((x + 1) > 0)) && !tile.ActiveCard)
-                            validTiles.Add(GridManager.Instance.Grid[x - 1, y]);
-
-                        validTiles.Add(tile);
+                        validTiles.Add(GridManager.Instance.Grid[neighborX, y]);
                     }
-                    else if (tile.GetIsPlayer1 == isPlayer1 && targetsAllies && tile.GridPosition != currentPosition)
-                        validTiles.Add(tile);
+
+                    validTiles.Add(tile);
                 }
+                // If the tile belongs to an ally, is not the current position, and ally-targeting is allowed,
+                // add the tile to the valid tiles.
+                else if (tile.GetIsPlayer1 == isPlayer1 && targetsAllies && tile.GridPosition != currentPosition)
+                {
+                    validTiles.Add(tile);
+                }
+            }
+        }
 
         return validTiles;
     }
 
+    /// <summary>
+    /// Returns a list of valid target tiles for a global card action based on the current position and the targeting rules.
+    /// </summary>
+    /// <param name="currentPosition">The current position of the card on the grid, as a Vector2Int.</param>
+    /// <param name="isPlayer1">A boolean indicating whether the card belongs to Player 1.</param>
+    /// <param name="validTargets">A dictionary containing the valid targeting rules for the action, using string keys and bool values.</param>
+    /// <returns>A list of valid target tiles for the global card action.</returns>
     public static List<Tile> Global(Vector2Int currentPosition, bool isPlayer1, StringBoolDictionary validTargets)
     {
         List<Tile> validTiles = new List<Tile>();
+
+        // Retrieve the targeting rules from the dictionary.
         validTargets.TryGetValue("Targets Enemies", out bool targetsEnemies);
         validTargets.TryGetValue("Targets Allies", out bool targetsAllies);
         validTargets.TryGetValue("Targets Self", out bool targetsSelf);
 
-        for (int x = 0; x < 6; x++)/* and */ for (int y = 0; y < 5; y++)
+        // Iterate through the entire grid.
+        for (int x = 0; x < 6; x++)
         {
-                if (x < 0 || y < 0 || x > 5 || y > 4)
-                    continue;
-
+            for (int y = 0; y < 5; y++)
+            {
                 Tile tile = GridManager.Instance.Grid[x, y];
 
-            if (tile.GridPosition == currentPosition && targetsSelf)
-                validTiles.Add(tile);
-            else if (tile.GetIsPlayer1 != isPlayer1 && targetsEnemies)
-                validTiles.Add(tile);
-            else if (tile.GetIsPlayer1 == isPlayer1 && targetsAllies && tile.GridPosition != currentPosition)
-                validTiles.Add(tile);
+                // If the tile is the current position and self-targeting is allowed, add the tile to the valid tiles.
+                if (tile.GridPosition == currentPosition && targetsSelf)
+                {
+                    validTiles.Add(tile);
+                }
+                // If the tile belongs to an enemy and enemy-targeting is allowed, add the tile to the valid tiles.
+                else if (tile.GetIsPlayer1 != isPlayer1 && targetsEnemies)
+                {
+                    validTiles.Add(tile);
+                }
+                // If the tile belongs to an ally, is not the current position, and ally-targeting is allowed, add the tile to the valid tiles.
+                else if (tile.GetIsPlayer1 == isPlayer1 && targetsAllies && tile.GridPosition != currentPosition)
+                {
+                    validTiles.Add(tile);
+                }
+            }
         }
 
         return validTiles;
