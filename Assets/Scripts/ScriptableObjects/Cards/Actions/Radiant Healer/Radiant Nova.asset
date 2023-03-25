@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44d12ee8257b27340b9c6075a6c1ed8f, type: 3}
+  m_Name: Radiant Nova
+  m_EditorClassIdentifier: 
+  _cost: 6
+  _name: Radiant Nova
+  _description: Heal all other allies.
+  _sprite: {fileID: 21300000, guid: 00a6c0b1fd929924293a43e5b0b6e959, type: 3}
+  _keywords: 0200000005000000
+  _range: 3
+  _validTargets:
+    m_keys:
+    - Targets Enemies
+    - Targets Allies
+    - Targets Self
+    m_values: 000100

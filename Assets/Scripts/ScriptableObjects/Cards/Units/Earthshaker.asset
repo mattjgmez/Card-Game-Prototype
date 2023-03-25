@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd287c3aa76071349975e6c1ebca7a02, type: 3}
+  m_Name: Earthshaker
+  m_EditorClassIdentifier: 
+  _name: Earthshaker
+  _health: 18
+  _power: 0
+  _energy: 2
+  _cost: 0
+  _keywords: []
+  _actions:
+  - {fileID: 11400000, guid: 96bd7f14dd92ffa4fb888f4a8a9613d6, type: 2}
+  _sprite: {fileID: 21300000, guid: 300ea1a5869382b43bf6149aba92c4db, type: 3}
+  _animController: {fileID: 9100000, guid: 1d4af8c325522f144a3ebdefb8d089f1, type: 2}
+  _realm: 0
