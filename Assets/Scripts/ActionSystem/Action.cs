@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class Action : MonoBehaviour
 {
     [SerializeField] private ActionInfo _actionInfo;
+    [SerializeField] private bool _isUI;
 
     private int _cost;
     private bool _isPlayer_1;
@@ -19,14 +20,17 @@ public class Action : MonoBehaviour
     {
         _card = GetComponentInParent<Card>();
         _image = GetComponent<Image>();
-        _arrow = GameObject.Find("Arrow").GetComponent<Arrow>();
 
-        _isPlayer_1 = _card.IsPlayer_1;
+        if (!_isUI)
+        {
+            _arrow = GameObject.Find("Arrow").GetComponent<Arrow>();
+            _isPlayer_1 = _card.IsPlayer_1;
+        }
     }
 
     private void Update()
     {
-        if (_isSelected)
+        if (_isSelected && !_isUI)
         {
             HandleTargeting();
         }
@@ -34,11 +38,11 @@ public class Action : MonoBehaviour
 
     public void SelectAction()
     {
-        if (GameManager.Instance.CurrentTurn == GameState.Player1Turn && _actionInfo.GetCost <= _card.GetEnergy && !_card.IsExhausted)
+        if (TurnManager.Instance.CurrentTurn == GameState.Player1Turn && _actionInfo.Cost <= _card.GetEnergy && !_card.IsExhausted)
         {
             SetRange();
             _isSelected = true;
-            GameManager.Instance.ObjectSelected = true;
+            TurnManager.Instance.ObjectSelected = true;
         }
     }
 
@@ -66,7 +70,7 @@ public class Action : MonoBehaviour
             _isSelected = false;
             _card.ActionHandler.Selected = false;
             _arrow.IsSelected = false;
-            GameManager.Instance.ObjectSelected = false;
+            TurnManager.Instance.ObjectSelected = false;
 
             SetValidTilesColor(false);
         }
@@ -80,7 +84,7 @@ public class Action : MonoBehaviour
     {
         foreach (Tile tile in _validTiles)
         {
-            tile.SetColor(active ? tile.ActiveColor : tile.DefaultColor);
+            tile.SetTileActive(active);
         }
     }
 
@@ -92,6 +96,11 @@ public class Action : MonoBehaviour
     private List<Tile> CalculateTargetTiles(Tile hitTile)
     {
         List<Tile> targetTiles = new() { hitTile };
+
+        if (_actionInfo.HasKeyword(ActionKeywords.Nova))
+        {
+            AddNovaTiles(targetTiles);
+        }
 
         if (_actionInfo.HasKeyword(ActionKeywords.Cleave))
         {
@@ -138,6 +147,18 @@ public class Action : MonoBehaviour
             int newX = hitTile.GridPosition.x + (direction * i);
             if (newX >= 0 && newX < maxColumns)
                 targetTiles.Add(GridManager.Instance.Grid[newX, y]);
+        }
+    }
+
+    /// <summary>
+    /// Adds all valid tiles to given list of tiles.
+    /// </summary>
+    /// <param name="targetTiles">The list of tiles to add on to.</param>
+    private void AddNovaTiles(List<Tile> targetTiles)
+    {
+        foreach (Tile tile in _validTiles)
+        {
+            targetTiles.Add(tile);
         }
     }
     #endregion
@@ -236,8 +257,8 @@ public class Action : MonoBehaviour
     public void SetInfo(ActionInfo info)
     {
         _actionInfo = info;
-        _image.sprite = _actionInfo.GetSprite;
-        _cost = _actionInfo.GetCost;
+        _image.sprite = _actionInfo.Sprite;
+        _cost = _actionInfo.Cost;
     }
 
     public void SetRange()
@@ -250,19 +271,19 @@ public class Action : MonoBehaviour
             return;
         }
 
-        switch (_actionInfo.GetRange)
+        switch (_actionInfo.Range)
         {
             case ActionRange.Melee:
-                _validTiles = ActionRanges.Melee(_card.CurrentSpace.GridPosition, _isPlayer_1, _actionInfo.GetValidTargets);
+                _validTiles = ActionRanges.Melee(_card.CurrentSpace.GridPosition, _isPlayer_1, _actionInfo.ValidTargets);
                 break;
             case ActionRange.Ranged:
-                _validTiles = ActionRanges.Ranged(_card.CurrentSpace.GridPosition, _isPlayer_1, _actionInfo.GetValidTargets);
+                _validTiles = ActionRanges.Ranged(_card.CurrentSpace.GridPosition, _isPlayer_1, _actionInfo.ValidTargets);
                 break;
             case ActionRange.Reach:
-                _validTiles = ActionRanges.Reach(_card.CurrentSpace.GridPosition, _isPlayer_1, _actionInfo.GetValidTargets);
+                _validTiles = ActionRanges.Reach(_card.CurrentSpace.GridPosition, _isPlayer_1, _actionInfo.ValidTargets);
                 break;
             case ActionRange.Global:
-                _validTiles = ActionRanges.Global(_card.CurrentSpace.GridPosition, _isPlayer_1, _actionInfo.GetValidTargets);
+                _validTiles = ActionRanges.Global(_card.CurrentSpace.GridPosition, _isPlayer_1, _actionInfo.ValidTargets);
                 break;
         }
     }

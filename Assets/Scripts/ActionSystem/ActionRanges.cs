@@ -19,14 +19,14 @@ public static class ActionRanges
     /// <param name="isPlayer1">A boolean indicating whether the card belongs to Player 1.</param>
     /// <param name="validTargets">A dictionary containing the valid targeting rules for the action, using string keys and bool values.</param>
     /// <returns>A list of valid target tiles for the card action with melee range.</returns>
-    public static List<Tile> Melee(Vector2Int currentPosition, bool isPlayer1, StringBoolDictionary validTargets)
+    public static List<Tile> Melee(Vector2Int currentPosition, bool isPlayer1, List<bool> validTargets)
     {
         List<Tile> validTiles = new List<Tile>();
 
         // Retrieve the targeting rules from the dictionary.
-        validTargets.TryGetValue("Targets Enemies", out bool targetsEnemies);
-        validTargets.TryGetValue("Targets Allies", out bool targetsAllies);
-        validTargets.TryGetValue("Targets Self", out bool targetsSelf);
+        bool targetsEnemies = validTargets[0];
+        bool targetsAllies = validTargets[1];
+        bool targetsSelf = validTargets[2];
 
         // Define a range for x and y based on the current position.
         int xMin = Mathf.Max(currentPosition.x - 1, 0);
@@ -69,14 +69,14 @@ public static class ActionRanges
     /// <param name="isPlayer1">A boolean indicating whether the card belongs to Player 1.</param>
     /// <param name="validTargets">A dictionary containing the valid targeting rules for the action, using string keys and bool values.</param>
     /// <returns>A list of valid target tiles for the card action with reach.</returns>
-    public static List<Tile> Reach(Vector2Int currentPosition, bool isPlayer1, StringBoolDictionary validTargets)
+    public static List<Tile> Reach(Vector2Int currentPosition, bool isPlayer1, List<bool> validTargets)
     {
         List<Tile> validTiles = new List<Tile>();
 
         // Retrieve the targeting rules from the dictionary.
-        validTargets.TryGetValue("Targets Enemies", out bool targetsEnemies);
-        validTargets.TryGetValue("Targets Allies", out bool targetsAllies);
-        validTargets.TryGetValue("Targets Self", out bool targetsSelf);
+        bool targetsEnemies = validTargets[0];
+        bool targetsAllies = validTargets[1];
+        bool targetsSelf = validTargets[2];
 
         // Define a range for x and y based on the current position.
         int xMin = Mathf.Max(currentPosition.x - 1, 0);
@@ -119,7 +119,7 @@ public static class ActionRanges
     /// <param name="isPlayer1">A boolean indicating whether the card belongs to Player 1.</param>
     /// <param name="validTargets">A dictionary containing the valid targeting rules for the action, using string keys and bool values.</param>
     /// <returns>A list of valid target tiles for the ranged card action.</returns>
-    public static List<Tile> Ranged(Vector2Int currentPosition, bool isPlayer1, StringBoolDictionary validTargets)
+    public static List<Tile> Ranged(Vector2Int currentPosition, bool isPlayer1, List<bool> validTargets)
     {
         // If the card is on its frontline, treat it as a Reach action instead of Ranged.
         if (currentPosition.x == (isPlayer1 ? 2 : 3))
@@ -128,9 +128,9 @@ public static class ActionRanges
         List<Tile> validTiles = new List<Tile>();
 
         // Retrieve the targeting rules from the dictionary.
-        validTargets.TryGetValue("Targets Enemies", out bool targetsEnemies);
-        validTargets.TryGetValue("Targets Allies", out bool targetsAllies);
-        validTargets.TryGetValue("Targets Self", out bool targetsSelf);
+        bool targetsEnemies = validTargets[0];
+        bool targetsAllies = validTargets[1];
+        bool targetsSelf = validTargets[2];
 
         // Set up loop variables based on the player.
         int enemyFrontline = isPlayer1 ? 3 : 2;
@@ -181,14 +181,14 @@ public static class ActionRanges
     /// <param name="isPlayer1">A boolean indicating whether the card belongs to Player 1.</param>
     /// <param name="validTargets">A dictionary containing the valid targeting rules for the action, using string keys and bool values.</param>
     /// <returns>A list of valid target tiles for the global card action.</returns>
-    public static List<Tile> Global(Vector2Int currentPosition, bool isPlayer1, StringBoolDictionary validTargets)
+    public static List<Tile> Global(Vector2Int currentPosition, bool isPlayer1, List<bool> validTargets)
     {
         List<Tile> validTiles = new List<Tile>();
 
         // Retrieve the targeting rules from the dictionary.
-        validTargets.TryGetValue("Targets Enemies", out bool targetsEnemies);
-        validTargets.TryGetValue("Targets Allies", out bool targetsAllies);
-        validTargets.TryGetValue("Targets Self", out bool targetsSelf);
+        bool targetsEnemies = validTargets[0];
+        bool targetsAllies = validTargets[1];
+        bool targetsSelf = validTargets[2];
 
         // Iterate through the entire grid.
         for (int x = 0; x < 6; x++)

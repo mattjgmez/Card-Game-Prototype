@@ -3,46 +3,82 @@ using UnityEngine;
 
 public class GridManager : MonoSingleton<GridManager>
 {
-    [SerializeField] GameObject _tilePrefab;
+    [SerializeField] private GameObject _tilePrefab;
 
-    Tile[,] _grid;
-    int _width = 6, _height = 5;
+    private Tile[,] _grid;
+    private List<Tile> _playerTiles = new List<Tile>();
+    readonly int _width = 6, _height = 5;
 
     protected override void Init()
     {
         _grid = new Tile[_width, _height];
 
-        for (float x = 0; x < _width; x++)/* and */ for (float y = 0; y < _height; y++)
+        for (float x = 0; x < _width; x++)
         {
-            SpawnTile(x, y);
+            for (float y = 0; y < _height; y++)
+            {
+                SpawnTile(x, y);
+            }
         }
     }
 
     void SpawnTile(float x, float y)
     {
-        Tile spawnedTile = Instantiate
-            (_tilePrefab, new Vector3(x - 2.5f, 0, y - 2), Quaternion.Euler(90, 0, 0), transform).GetComponent<Tile>();
+        Tile spawnedTile = Instantiate(_tilePrefab, new Vector3(x - 2.5f, 0, y - 2), Quaternion.Euler(90, 0, 0), transform).GetComponent<Tile>();
 
         spawnedTile.gameObject.name = $"X:{x} Y:{y}";
         spawnedTile.SetGridPosition((int)x, (int)y);
-        spawnedTile.SetIsPlayer1(x < 3);
+
+        if (x < 3)
+        {
+            spawnedTile.SetIsPlayer1(true);
+            _playerTiles.Add(spawnedTile);
+        }
 
         _grid[(int)x, (int)y] = spawnedTile;
     }
 
+    /// <summary>
+    /// Determines whether the current player can advance based on the number of active cards and the state of their frontline.
+    /// </summary>
+    /// <returns>True if the current player can advance, false otherwise.</returns>
     public bool CanAdvance()
     {
-        bool isPlayer1Turn = GameManager.Instance.CurrentTurn == GameState.Player1Turn;
+        bool isPlayer1Turn = TurnManager.Instance.CurrentTurn == GameState.Player1Turn;
+        int startColumn = isPlayer1Turn ? 0 : 3;
+        int endColumn = isPlayer1Turn ? 3 : 6;
+        int frontlineColumn = isPlayer1Turn ? 3 : 2;
 
-        return !CheckColumn(isPlayer1Turn ? 3 : 2);
+        int activeCards = CountActiveCards(startColumn, endColumn);
+        bool emptyFrontline = !CheckColumn(frontlineColumn);
+
+        Debug.Log($"{(isPlayer1Turn ? "Player 1" : "Player 2")} Active cards: {activeCards} Empty Frontline: {emptyFrontline}");
+        return activeCards > 0 && emptyFrontline;
+    }
+
+    /// <summary>
+    /// Counts the number of active cards in the specified range of columns.
+    /// </summary>
+    /// <param name="startColumn">The starting column index, inclusive.</param>
+    /// <param name="endColumn">The ending column index, exclusive.</param>
+    /// <returns>The number of active cards in the specified range of columns.</returns>
+    public int CountActiveCards(int startColumn, int endColumn)
+    {
+        int activeCards = 0;
+
+        for (int x = startColumn; x < endColumn; x++)
+        {
+            activeCards += CheckColumn(x) ? 1 : 0;
+        }
+
+        return activeCards;
     }
 
     public bool CheckColumn(int x)
     {
         for (int y = 0; y < _height; y++)
         {
-            Debug.Log($"Checking {_grid[x, y]} for active card...");
-            if (_grid[x, y].ActiveCard) return true;
+            if (TileHasActiveCard(x, y)) return true;
         }
 
         return false;
@@ -52,11 +88,16 @@ public class GridManager : MonoSingleton<GridManager>
     {
         for (int x = 0; x < _width; x++)
         {
-            Debug.Log($"Checking {_grid[x, y]} for active card...");
-            if (_grid[x, y].ActiveCard) return true;
+            if (TileHasActiveCard(x, y)) return true;
         }
 
         return false;
+    }
+
+    private bool TileHasActiveCard(int x, int y)
+    {
+        Debug.Log($"Checking {_grid[x, y]} for active card...");
+        return _grid[x, y].ActiveCard;
     }
 
     public void ColumnSetActive(int x, bool value)
@@ -68,42 +109,13 @@ public class GridManager : MonoSingleton<GridManager>
         }
     }
 
-    public List<Tile> GetBoardHalf(bool isPlayer1)
+    public void TogglePlayerSpaces(bool value)
     {
-        List<Tile> validTiles = new List<Tile>();
-
-        foreach (Tile tile in _grid)
+        foreach (Tile tile in _playerTiles)
         {
-            if (isPlayer1 && tile.GridPosition.x < 0)
-                validTiles.Add(tile);
-            else if (!isPlayer1 && tile.GridPosition.x > 0)
-                validTiles.Add(tile);
+            tile.SetTileActive(value);
         }
-
-        return validTiles;
     }
 
     public Tile[,] Grid { get { return _grid; } }
 }
-
-    //Deprecated, replaced by ActionRanges class methods
-    //public List<Tile> GetTilesInRange(Vector2Int gridPosition, List<Vector2Int> range, bool isPlayer1)
-    //{
-    //    List<Tile> validTiles = new List<Tile>();
-
-    //    foreach (Vector2Int vector in range)
-    //    {
-    //        int x = gridPosition.x + (isPlayer1 ? vector.x : -vector.x);
-    //        int y = gridPosition.y + (isPlayer1 ? vector.y : -vector.y);
-
-    //        if (x < 0 || y < 0 || x > 5 || y > 4)
-    //            continue;
-
-    //        if (_grid[x, y] != null)
-    //        {
-    //            validTiles.Add(_grid[x, y]);
-    //            Debug.Log($"{_grid[x, y]} set to in range.");
-    //        }
-    //    }
-    //    return validTiles;
-    //}

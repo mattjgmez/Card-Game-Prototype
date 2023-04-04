@@ -18,9 +18,4 @@ MonoBehaviour:
   _sprite: {fileID: 21300000, guid: 466a0357fbc7f3f4c919c33f6f471808, type: 3}
   _keywords: 01000000
   _range: 1
-  _validTargets:
-    m_keys:
-    - Targets Enemies
-    - Targets Allies
-    - Targets Self
-    m_values: 010000
+  _validTargets: 010000

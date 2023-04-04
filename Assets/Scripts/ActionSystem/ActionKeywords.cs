@@ -1,14 +1,15 @@
 public enum ActionKeywords
 {
-    Damage,
-    Heal,
-    Cleave,     //Hits nearby targets in column
-    Burst,      //Hits all targets in the row
-    Drain,      //Heals user
-    DrawCard,
-    Momentum,   //Refunds energy if lethal
-    Provoke,    //Forces enemy to target user
-    Combo,      //Bonus when targetting the same as the last action
-    DeathTouch, //Instantly kills target
-    Overkill,   //Overkill damage is dealt to unit behind target
+    Damage = 1,
+    Heal = 2,
+    Cleave = 3,         // Hits nearby targets in column
+    Burst = 4,          // Hits all targets in the row
+    Nova = 5,           // Hits all valid targets
+    Drain = 6,          // Heals user
+    DrawCard = 7,
+    Momentum = 8,       // Refunds energy if lethal
+    Provoke = 9,        // Forces enemy to target user
+    Combo = 10,         // Bonus when targeting the same as the last action
+    DeathTouch = 11,    // Instantly kills target
+    Overkill = 12,      // Overkill damage is dealt to unit behind target
 }

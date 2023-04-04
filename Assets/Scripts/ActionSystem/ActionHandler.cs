@@ -15,7 +15,7 @@ public class ActionHandler : MonoBehaviour
 
     public void Initialize(CardInfo cardInfo)
     {
-        List<ActionInfo> actionList = cardInfo.GetActions;
+        List<ActionInfo> actionList = cardInfo.Actions;
 
         for (int i = 0; i < actionList.Count; i++)
         {

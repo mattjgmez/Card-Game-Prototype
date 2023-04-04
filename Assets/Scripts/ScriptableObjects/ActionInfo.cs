@@ -12,11 +12,11 @@ public class ActionInfo : ScriptableObject
     [SerializeField] Sprite _sprite;
     [SerializeField] List<ActionKeywords> _keywords;
     [SerializeField] ActionRange _range;
-    [SerializeField] StringBoolDictionary _validTargets = new StringBoolDictionary
+    [SerializeField, Header("Order of bools: Enemies, Allies, Self")] List<bool> _validTargets = new List<bool>
     {
-        {"Targets Enemies", false },
-        {"Targets Allies", false },
-        {"Targets Self", false },
+        { false },
+        { false },
+        { false },
     };
 
     public bool HasKeyword(ActionKeywords keyword)
@@ -24,14 +24,45 @@ public class ActionInfo : ScriptableObject
         return _keywords.Contains(keyword);
     }
 
-    public int GetCost { get { return _cost; } }
-    public string GetName { get { return _name; } }
-    public string GetDescription { get { return _description; } }
-    public Sprite GetSprite { get { return _sprite; } }
-    public List<ActionKeywords> GetKeywords { get { return _keywords; } }
-    public ActionRange GetRange { get { return _range; } }
-    public StringBoolDictionary GetValidTargets { get { return _validTargets; } }
-}
+    public int Cost
+    {
+        get { return _cost; }
+        set { _cost = value; }
+    }
 
-[Serializable]
-public class StringBoolDictionary : SerializableDictionary<string, bool> { }
+    public string Name
+    {
+        get { return _name; }
+        set { _name = value; }
+    }
+
+    public string Description
+    {
+        get { return _description; }
+        set { _description = value; }
+    }
+
+    public Sprite Sprite
+    {
+        get { return _sprite; }
+        set { _sprite = value; }
+    }
+
+    public List<ActionKeywords> Keywords
+    {
+        get { return _keywords; }
+        set { _keywords = value; }
+    }
+
+    public ActionRange Range
+    {
+        get { return _range; }
+        set { _range = value; }
+    }
+
+    public List<bool> ValidTargets
+    {
+        get { return _validTargets; }
+        set { _validTargets = value; }
+    }
+}

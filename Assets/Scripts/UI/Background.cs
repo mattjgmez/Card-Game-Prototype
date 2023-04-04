@@ -6,12 +6,12 @@ public class Background : MonoBehaviour
 {
     private void OnEnable()
     {
-        GameManager.Instance.Advance += ScrollBackground;
+        TurnManager.Instance.Advance += ScrollBackground;
     }
 
     private void OnDisable()
     {
-        GameManager.Instance.Advance -= ScrollBackground;
+        TurnManager.Instance.Advance -= ScrollBackground;
     }
 
     private void ScrollBackground(GameState state)
@@ -21,7 +21,7 @@ public class Background : MonoBehaviour
 
     private IEnumerator ScrollBackgroundCoroutine()
     {
-        bool isPlayer1Turn = GameManager.Instance.CurrentTurn == GameState.Player1Turn;
+        bool isPlayer1Turn = TurnManager.Instance.CurrentTurn == GameState.Player1Turn;
 
         int direction = isPlayer1Turn ? -1 : 1;
         Vector3 targetPosition = transform.position + new Vector3(direction, 0);

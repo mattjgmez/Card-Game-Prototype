@@ -38,7 +38,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 1, y: 1.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &174029873729828061
 GameObject:
@@ -1659,7 +1659,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _info: {fileID: 0}
-  _isPlayer_1: 0
+  _isPlayer_1: 1
   _actionHandler: {fileID: 1393929719201656222}
   _canvas: {fileID: 7404673423703713223}
   _inHandVisuals: {fileID: 3179242729525186}
@@ -1701,8 +1701,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.80587244, y: 1.1681334, z: 0.09378125}
-  m_Center: {x: 0, y: 0.58, z: -0.21971488}
+  m_Size: {x: 0.8, y: 1.17, z: 0}
+  m_Center: {x: 0, y: 0.6, z: -0.19}
 --- !u!1 &9193740042337744144
 GameObject:
   m_ObjectHideFlags: 0
@@ -1739,7 +1739,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0.76, y: 1.1115}
+  m_SizeDelta: {x: 0.75, y: 1.12}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5007556551322041452
 CanvasRenderer:

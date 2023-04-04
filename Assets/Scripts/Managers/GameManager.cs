@@ -1,156 +1,106 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-
-[Flags] public enum Realm { Neutral = 0, Nightlands = 1, Glacius = 2, }
-public enum GameState { Player1Turn = 0, Player2Turn = 1 }
-public enum TurnState { TurnStart = 0, PlayPhase = 1, Advance = 2, DrawCards = 3, TurnEnd = 4 }
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoSingleton<GameManager>
 {
-    public delegate void GameStateDelegate(GameState turn);
-    public event GameStateDelegate StartTurn;
-    public event GameStateDelegate PlayPhase;
-    public event GameStateDelegate Advance;
-    public event GameStateDelegate DrawCards;
-    public event GameStateDelegate EndTurn;
+    private (Dictionary<CardInfo, int>, string) _currentDeck = default;
+    private Queue<CardInfo> _cardQueue;
 
-    [SerializeField] int _scale = 0;
-    [SerializeField] GameState _currentTurn;
-    [SerializeField] TurnState _currentTurnState;
+    public Action<(Dictionary<CardInfo, int>, string)> CurrentDeckChanged;
 
-    private void Start()
+    public (Dictionary<CardInfo, int>, string) CurrentDeck
     {
-        Advance += IncrementScale;
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Q))
-            Debug.Log("Can advance is:" + CanAdvance());
-    }
-
-    public void NextPhase()
-    {
-        if (_currentTurnState == TurnState.TurnEnd)
+        get
         {
-            _currentTurn = _currentTurn == GameState.Player1Turn ? GameState.Player2Turn : GameState.Player1Turn;
-            _currentTurnState = TurnState.TurnStart;
+            return _currentDeck;
         }
-        else
-            _currentTurnState += 1;
-
-        switch (_currentTurnState)
+        set
         {
-            case TurnState.TurnStart:
-                Debug.Log("StartTurn event called.");
-                StartTurn?.Invoke(_currentTurn);
-                break;
+            _currentDeck = value;
 
-            case TurnState.PlayPhase:
-                Debug.Log("PlayPhase event called.");
-                PlayPhase?.Invoke(_currentTurn);
-                break;
+            CurrentDeckChanged?.Invoke(_currentDeck);
 
-            case TurnState.Advance:
-                if (CanAdvance())
-                {
-                    Debug.Log("Advance event called.");
-                    Advance?.Invoke(_currentTurn);
-                }
-                break;
+            string deckName = value == default ? "NULL" : value.Item2;
+            Debug.Log($"Current Deck set to {deckName}.");
 
-            case TurnState.DrawCards:
-                Debug.Log("DrawCards event called.");
-                DrawCards?.Invoke(_currentTurn);
-                break;
-
-            case TurnState.TurnEnd:
-                Debug.Log("EndTurn event called.");
-                EndTurn?.Invoke(_currentTurn);
-                break;
-        }
-    }
-
-    public bool CanAdvance()
-    {
-        bool isPlayer1Turn = _currentTurn == GameState.Player1Turn;
-        int activeCards = 0;
-        bool emptyFrontline;
-
-        if (isPlayer1Turn)
-        {
-            for (int x = 0; x < 3; x++)
+            if (value != default)
             {
-                activeCards += GridManager.Instance.CheckColumn(x) ? 1 : 0;
+                _cardQueue = CreateCardQueue(value.Item1);
             }
-
-            emptyFrontline = !GridManager.Instance.CheckColumn(3);
-
-            Debug.Log($"Player 1 Active cards: {activeCards} Empty Frontline: {emptyFrontline}");
-            return activeCards > 0 && emptyFrontline;
         }
-        else
+    }
+
+    protected override void Init()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
+
+    public void StartGame()
+    {
+        if (_currentDeck != default)
         {
-            for (int x = 3; x < 6; x++)
+            ChangeScene("Gameplay");
+        }
+    }
+
+    public void ChangeScene(string sceneName)
+    {
+        SceneManager.LoadScene(sceneName);
+    }
+
+    /// <summary>
+    /// Creates a queue of CardInfo objects based on the provided deck.
+    /// </summary>
+    /// <param name="deck">A Dictionary where the key is a CardInfo object and the value is an integer representing the amount of each card in the deck.</param>
+    /// <returns>A Queue of CardInfo objects that represents the deck with the specified card counts.</returns>
+    private Queue<CardInfo> CreateCardQueue(Dictionary<CardInfo, int> deck)
+    {
+        Queue<CardInfo> cardQueue = new Queue<CardInfo>();
+
+        foreach (KeyValuePair<CardInfo, int> entry in deck)
+        {
+            for (int i = 0; i < entry.Value; i++)
             {
-                activeCards += GridManager.Instance.CheckColumn(x) ? 1 : 0;
+                cardQueue.Enqueue(entry.Key);
             }
-
-            emptyFrontline = !GridManager.Instance.CheckColumn(2);
-
-            Debug.Log($"Player 2 Active cards: {activeCards} Empty Frontline: {emptyFrontline}");
-            return activeCards > 0 && emptyFrontline;
         }
+
+        return cardQueue;
     }
 
-    void IncrementScale(GameState state)
+    /// <summary>
+    /// Shuffles the CardInfo queue stored as a class variable.
+    /// </summary>
+    /// <remarks>
+    /// This method shuffles the CardInfo queue in place by converting it to a list, shuffling the list using the Fisher-Yates shuffle algorithm, and then re-enqueuing the shuffled cards back into the original queue.
+    /// </remarks>
+    public void ShuffleCardQueue()
     {
-        bool player1Turn = state == GameState.Player1Turn;
+        List<CardInfo> cardList = _cardQueue.ToList();
+        System.Random random = new System.Random();
 
-        _scale += player1Turn ? 1 : -1;
-
-        switch (_scale)
+        for (int i = cardList.Count - 1; i > 0; i--)
         {
-            case 5:
-                //Player 1 wins
-                break;
-            case 4:
-                GridManager.Instance.ColumnSetActive(5, false);
-                GridManager.Instance.ColumnSetActive(4, false);
-                break;
-            case 3:
-                GridManager.Instance.ColumnSetActive(5, false);
-                GridManager.Instance.ColumnSetActive(4, true);
-                break;
-            case 2:
-                GridManager.Instance.ColumnSetActive(5, true);
-                break;
-            case -2:
-                GridManager.Instance.ColumnSetActive(0, true);
-                break;
-            case -3:
-                GridManager.Instance.ColumnSetActive(1, true);
-                GridManager.Instance.ColumnSetActive(0, false);
-                break;
-            case -4:
-                GridManager.Instance.ColumnSetActive(1, false);
-                GridManager.Instance.ColumnSetActive(0, false);
-                break;
-            case -5:
-                //Player 2 wins
-                break;
+            int randomIndex = random.Next(0, i + 1);
+            CardInfo temp = cardList[i];
+            cardList[i] = cardList[randomIndex];
+            cardList[randomIndex] = temp;
+        }
+
+        _cardQueue.Clear();
+
+        foreach (CardInfo card in cardList)
+        {
+            _cardQueue.Enqueue(card);
         }
     }
 
-    private void OnDrawGizmos()
+    public Queue<CardInfo> GetCardQueue()
     {
-        Gizmos.DrawSphere(GameCursor.WorldPosition, .25f);
+        return _cardQueue;
     }
-
-    public bool ObjectSelected { get; set; }
-    public int Scale { get { return _scale; } }
-    public GameState CurrentTurn { get { return _currentTurn; } }
-    public TurnState CurrentTurnState { get { return _currentTurnState; } }
 }

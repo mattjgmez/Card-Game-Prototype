@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class Card : MonoBehaviour
+public class Card : Interactable
 {
     #region PRIVATE VARIABLES
     [Header("Card Information")]
@@ -50,9 +50,13 @@ public class Card : MonoBehaviour
 
     private void Awake()
     {
-        InitializeVariables();
         _cardCollider = GetComponent<Collider>();
         _arrow = GameObject.Find("Arrow").GetComponent<Arrow>();
+    }
+
+    private void Start()
+    {
+        InitializeVariables();
 
         _artRenderer.enabled = false;
         _artRenderer.flipX = !_isPlayer_1;
@@ -81,10 +85,18 @@ public class Card : MonoBehaviour
         }
     }
 
-    private void OnMouseDown()
+    protected override void OnLeftClick()
     {
-        if (GameManager.Instance.CurrentTurn == GameState.Player1Turn && _inHand)
+        if (TurnManager.Instance.CurrentTurn == GameState.Player1Turn && _inHand && PlayerManager.Instance.CanPlayCard(_cost))
+        {
             _isSelected = !_isSelected;
+            Debug.Log($"{_info.Name} is selected.");
+        }
+    }
+
+    protected override void OnRightClick()
+    {
+        //Show extended information.
     }
 
     public void OnMouseEnter()
@@ -92,7 +104,7 @@ public class Card : MonoBehaviour
         _initialPosition = transform.position;
 
         // Raise the card and increase its canvas sorting order when hovered over
-        transform.position = _initialPosition + new Vector3(0, 1, 0);
+        transform.position = _initialPosition + new Vector3(0, .5f, 0);
         _canvas.sortingOrder = _initialSortingOrder + _hoverSortingOrder;
     }
 
@@ -105,6 +117,12 @@ public class Card : MonoBehaviour
 
     private void PlayToTile()
     {
+        if (!PlayerManager.Instance.CanPlayCard(_cost))
+        {
+            Debug.LogWarning("Not enough supply to play this card.");
+            return;
+        }
+
         Tile targetTile = RaycastToBoard(Camera.main.ScreenPointToRay(Input.mousePosition));
         if (targetTile != null)
         {
@@ -300,15 +318,15 @@ public class Card : MonoBehaviour
     #region INITIALIZE METHODS
     void InitializeVariables()
     {
-        _power = _info.GetAttack;
-        _health = _info.GetHealth;
-        _energy = _info.GetEnergy;
-        _cost = _info.GetCost;
+        _power = _info.Power;
+        _health = _info.Health;
+        _energy = _info.Energy;
+        _cost = _info.Cost;
 
-        _maxHealth = _info.GetHealth;
-        _maxEnergy = _info.GetEnergy;
+        _maxHealth = _info.Health;
+        _maxEnergy = _info.Energy;
 
-        _nameText.text = _info.GetName;
+        _nameText.text = _info.Name;
 
         UpdateText();
     }
@@ -324,6 +342,9 @@ public class Card : MonoBehaviour
 
         HandManager.Instance.RemoveCardFromHand(gameObject);
         HandManager.Instance.CenterCardsInHand();
+
+        PlayerManager.Instance.LowerSupply(_cost);
+        PlayerManager.Instance.UpdateSupplyText();
 
         SubscribeEvents();
     }
@@ -350,14 +371,14 @@ public class Card : MonoBehaviour
 
     void SubscribeEvents()
     {
-        GameManager.Instance.Advance += StartAdvance;
-        GameManager.Instance.EndTurn += RefreshCard;
+        TurnManager.Instance.Advance += StartAdvance;
+        TurnManager.Instance.EndTurn += RefreshCard;
     }
 
     void UnsubscribeEvents()
     {
-        GameManager.Instance.Advance -= StartAdvance;
-        GameManager.Instance.EndTurn -= RefreshCard;
+        TurnManager.Instance.Advance -= StartAdvance;
+        TurnManager.Instance.EndTurn -= RefreshCard;
     }
     #endregion
 
@@ -389,8 +410,8 @@ public class Card : MonoBehaviour
 
     bool IsOwnersTurn()
     {
-        if ((_isPlayer_1 && GameManager.Instance.CurrentTurn == GameState.Player1Turn)
-            || (!_isPlayer_1 && GameManager.Instance.CurrentTurn == GameState.Player2Turn))
+        if ((_isPlayer_1 && TurnManager.Instance.CurrentTurn == GameState.Player1Turn)
+            || (!_isPlayer_1 && TurnManager.Instance.CurrentTurn == GameState.Player2Turn))
             return true;
         else
             return false;
@@ -403,7 +424,7 @@ public class Card : MonoBehaviour
     public bool IsPlayer_1 { get { return _isPlayer_1; } }
     public bool IsExhausted { get { return _isExhausted; } }
     public bool IsProvoked { get { return _isProvoked; } }
-    public CardInfo GetCardInfo { get { return _info; } }
+    public CardInfo CardInfo { get { return _info; } set { _info = value; } }
     public Tile CurrentSpace { get { return _currentTile; } }
     public Animator GetAnimator { get { return _artAnimator; } }
     public Card GetProvokingCard { get { return _provokingCard; } }
