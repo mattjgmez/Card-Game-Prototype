@@ -44,6 +44,7 @@ public class GameManager : MonoSingleton<GameManager>
         if (_currentDeck != default)
         {
             ChangeScene("Gameplay");
+            ShuffleCardQueue();
         }
     }
 

@@ -81,6 +81,7 @@ public class Card : Interactable
                 Debug.Log("Card deselected");
                 _isSelected = false;
                 _arrow.IsSelected = false;
+                GridManager.Instance.TogglePlayerSpaces(false);
             }
         }
     }
@@ -90,6 +91,8 @@ public class Card : Interactable
         if (TurnManager.Instance.CurrentTurn == GameState.Player1Turn && _inHand && PlayerManager.Instance.CanPlayCard(_cost))
         {
             _isSelected = !_isSelected;
+            GridManager.Instance.TogglePlayerSpaces(true);
+
             Debug.Log($"{_info.Name} is selected.");
         }
     }
@@ -119,6 +122,7 @@ public class Card : Interactable
     {
         if (!PlayerManager.Instance.CanPlayCard(_cost))
         {
+            GridManager.Instance.TogglePlayerSpaces(false);
             Debug.LogWarning("Not enough supply to play this card.");
             return;
         }
@@ -133,6 +137,7 @@ public class Card : Interactable
 
             _isSelected = false;
             _arrow.IsSelected = false;
+            GridManager.Instance.TogglePlayerSpaces(false);
         }
     }
 
@@ -318,6 +323,8 @@ public class Card : Interactable
     #region INITIALIZE METHODS
     void InitializeVariables()
     {
+        _info.Init();
+
         _power = _info.Power;
         _health = _info.Health;
         _energy = _info.Energy;

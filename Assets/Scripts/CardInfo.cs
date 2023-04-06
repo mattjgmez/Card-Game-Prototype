@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -17,6 +18,13 @@ public class CardInfo : ScriptableObject
     [SerializeField] private List<CardTribe> _tribes;
     [SerializeField] private Sprite _sprite;
     [SerializeField] private AnimatorController _animController;
+
+    public void Init()
+    {
+        string assetPath = AssetDatabase.GetAssetPath(this);
+        string fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+        Name = fileName;
+    }
 
     public string Name
     {

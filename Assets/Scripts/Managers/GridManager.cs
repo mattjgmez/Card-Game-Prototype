@@ -111,9 +111,23 @@ public class GridManager : MonoSingleton<GridManager>
 
     public void TogglePlayerSpaces(bool value)
     {
-        foreach (Tile tile in _playerTiles)
+        foreach (Tile tile in _grid)
         {
-            tile.SetTileActive(value);
+            // If the tile is in playerTiles and has no active card, call SetTileActive with the value parameter
+            if (_playerTiles.Contains(tile) && !tile.ActiveCard)
+            {
+                tile.SetTileActive(value);
+            }
+            // If the tile is in playerTiles and has an active card and value is false, call SetTileActive with false
+            else if (_playerTiles.Contains(tile) && tile.ActiveCard && !value)
+            {
+                tile.SetTileActive(false);
+            }
+            // If the tile is not in playerTiles or has an active card, toggle the collider based on the value parameter
+            else if (!_playerTiles.Contains(tile) || tile.ActiveCard)
+            {
+                tile.GetComponent<Collider>().enabled = !value;
+            }
         }
     }
 

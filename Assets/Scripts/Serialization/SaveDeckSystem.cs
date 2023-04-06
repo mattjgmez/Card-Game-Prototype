@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using UnityEngine;
+using Newtonsoft.Json;
 
 /// <summary>
 /// The SaveDeckSystem class is a utility class for managing card decks in Unity. 
@@ -15,7 +15,10 @@ using UnityEngine;
 public static class SaveDeckSystem
 {
     /// <summary>
-    /// Generates a file path for the specified deck file name within a "CustomDecks" directory. If the "CustomDecks" directory does not exist, it creates the directory. The method combines the Application.persistentDataPath with the "CustomDecks" directory and the deck file name to return the complete file path.
+    /// Generates a file path for the specified deck file name within a "CustomDecks" directory.
+    /// If the "CustomDecks" directory does not exist, it creates the directory.
+    /// The method combines the Application.persistentDataPath with the "CustomDecks" directory
+    /// and the deck file name to return the complete file path.
     /// </summary>
     /// <param name="fileName">The name of the deck file, without an extension.</param>
     /// <returns>The complete file path for the specified deck file name within the "CustomDecks" directory.</returns>
@@ -28,41 +31,39 @@ public static class SaveDeckSystem
             Directory.CreateDirectory(customDecksPath);
         }
 
-        return Path.Combine(customDecksPath, $"{fileName}.deck");
+        return Path.Combine(customDecksPath, $"{fileName}.json");
     }
 
     /// <summary>
-    /// Saves a deck dictionary to a binary file using the specified deckName. The method first converts the dictionary into a List of CardInfoTokens and then saves the list to a file with the deckName as its filename.
+    /// Saves a deck dictionary to a JSON file using the specified deckName.
+    /// The method first converts the dictionary into a List of card names and then
+    /// saves the list to a file with the deckName as its filename.
     /// </summary>
     /// <param name="deck">The deck dictionary to save.</param>
     /// <param name="deckName">The name of the deck to be used as the filename.</param>
     public static void SaveDeckToFile(Dictionary<CardInfo, int> deck, string deckName)
     {
-        // Convert the "deck" Dictionary to a List of CardInfoTokens
-        List<CardInfoToken> deckList = new List<CardInfoToken>();
+        // Save the List to a file with the deckName string as its filename
+        string filePath = DeckFilePath(deckName);
 
+        List<string> cardNamesList = new List<string>();
         foreach (KeyValuePair<CardInfo, int> entry in deck)
         {
             for (int i = 0; i < entry.Value; i++)
             {
-                deckList.Add(new CardInfoToken(entry.Key));
+                cardNamesList.Add(entry.Key.Name);
             }
         }
 
-        // Save the List to a file with the deckName string as its filename
-        string filePath = DeckFilePath(deckName);
-
-        using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(fileStream, deckList);
-        }
-
+        string json = JsonConvert.SerializeObject(cardNamesList, Formatting.Indented);
+        File.WriteAllText(filePath, json);
         DebugDeck(deck, deckName, $"{deckName} saved to file.");
     }
 
     /// <summary>
-    /// Loads a deck from a binary file using the specified deckName, converts the saved CardInfoToken List into a Dictionary of CardInfo objects and their counts, and returns the resulting deck Dictionary.
+    /// Loads a deck from a JSON file using the specified deckName,
+    /// converts the saved card names List into a Dictionary of CardInfo objects and their counts,
+    /// and returns the resulting deck Dictionary.
     /// </summary>
     /// <param name="deckName">The name of the deck to load.</param>
     /// <returns>A Dictionary of CardInfo objects and their counts representing the loaded deck.</returns>
@@ -77,28 +78,30 @@ public static class SaveDeckSystem
             throw new FileNotFoundException($"Deck file not found: {filePath}");
         }
 
-        List<CardInfoToken> deckList;
+        string json = File.ReadAllText(filePath);
+        List<string> cardNamesList = JsonConvert.DeserializeObject<List<string>>(json);
 
-        using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            deckList = (List<CardInfoToken>)formatter.Deserialize(fileStream);
-        }
-
-        // Convert the loaded deck List into a Dictionary.
+        // Convert the loaded card names List into a Dictionary.
         Dictionary<CardInfo, int> deck = new Dictionary<CardInfo, int>();
 
-        foreach (CardInfoToken token in deckList)
+        foreach (string cardName in cardNamesList)
         {
-            CardInfo cardInfo = token.ToCardInfo();
+            CardInfo cardInfo = Resources.Load<CardInfo>($"ScriptableObjects/Units/{cardName}");
 
-            if (deck.ContainsKey(cardInfo))
+            if (cardInfo != null)
             {
-                deck[cardInfo]++;
+                if (deck.ContainsKey(cardInfo))
+                {
+                    deck[cardInfo]++;
+                }
+                else
+                {
+                    deck.Add(cardInfo, 1);
+                }
             }
             else
             {
-                deck.Add(cardInfo, 1);
+                Debug.LogError($"CardInfo with name {cardName} not found");
             }
         }
 
@@ -106,6 +109,35 @@ public static class SaveDeckSystem
         return deck;
     }
 
+    /// <summary>
+    /// Loads all action ScriptableObjects related to a given card.
+    /// </summary>
+    /// <param name="cardName">The name of the card for which to load the actions.</param>
+    /// <returns>A List of Action ScriptableObjects related to the card.</returns>
+    public static List<Action> LoadActionsForCard(string cardName)
+    {
+        string actionsFolderPath = $"ScriptableObjects/Actions/{cardName}";
+
+        // Load all Action ScriptableObjects found in the actionsFolderPath.
+        Action[] actionsArray = Resources.LoadAll<Action>(actionsFolderPath);
+
+        if (actionsArray.Length == 0)
+        {
+            Debug.LogError($"No Action ScriptableObjects found in folder: {actionsFolderPath}");
+        }
+
+        // Convert the loaded Action array into a List.
+        List<Action> actionsList = new List<Action>(actionsArray);
+
+        return actionsList;
+    }
+
+    /// <summary>
+    /// Debugs a deck by printing information about the deck and its cards to the Unity console.
+    /// </summary>
+    /// <param name="deck">The deck dictionary to debug.</param>
+    /// <param name="deckName">The name of the deck.</param>
+    /// <param name="consoleMessage">A message to print at the beginning of the debug log.</param>
     public static void DebugDeck(Dictionary<CardInfo, int> deck, string deckName, string consoleMessage)
     {
         StringBuilder sb = new StringBuilder();

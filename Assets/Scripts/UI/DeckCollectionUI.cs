@@ -68,8 +68,8 @@ public class DeckCollectionUI : MonoBehaviour
         // Check if the CustomDecks directory exists.
         if (Directory.Exists(customDecksPath))
         {
-            // Get all deck files in the CustomDecks directory with the ".deck" extension.
-            string[] deckFiles = Directory.GetFiles(customDecksPath, "*.deck");
+            // Get all deck files in the CustomDecks directory.
+            string[] deckFiles = Directory.GetFiles(customDecksPath, "*.json");
 
             // Iterate through each deck file.
             foreach (string deckFile in deckFiles)

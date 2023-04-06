@@ -20,6 +20,6 @@ MonoBehaviour:
   _keywords: []
   _actions:
   - {fileID: 11400000, guid: 96bd7f14dd92ffa4fb888f4a8a9613d6, type: 2}
+  _tribes: 
   _sprite: {fileID: 21300000, guid: 300ea1a5869382b43bf6149aba92c4db, type: 3}
   _animController: {fileID: 9100000, guid: 1d4af8c325522f144a3ebdefb8d089f1, type: 2}
-  _realm: 0
