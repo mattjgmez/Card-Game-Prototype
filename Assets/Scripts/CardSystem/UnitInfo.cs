@@ -6,31 +6,16 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Unit", menuName = "ScriptableObjects/Unit"), Serializable]
-public class CardInfo : ScriptableObject
+public class UnitInfo : CardInfo
 {
-    [SerializeField] private string _name;
     [SerializeField] private int _health;
     [SerializeField] private int _power;
-    [SerializeField] private int _energy;
     [SerializeField] private int _cost;
     [SerializeField] private string[] _keywords;
     [SerializeField] private List<ActionInfo> _actions;
     [SerializeField] private List<CardTribe> _tribes;
     [SerializeField] private Sprite _sprite;
     [SerializeField] private AnimatorController _animController;
-
-    public void Init()
-    {
-        string assetPath = AssetDatabase.GetAssetPath(this);
-        string fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
-        Name = fileName;
-    }
-
-    public string Name
-    {
-        get { return _name; }
-        set { _name = value; }
-    }
 
     public int Health
     {
@@ -42,12 +27,6 @@ public class CardInfo : ScriptableObject
     {
         get { return _power; }
         set { _power = value; }
-    }
-
-    public int Energy
-    {
-        get { return _energy; }
-        set { _energy = value; }
     }
 
     public int Cost
@@ -84,27 +63,5 @@ public class CardInfo : ScriptableObject
     {
         get { return _animController; }
         set { _animController = value; }
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj == null || GetType() != obj.GetType())
-        {
-            return false;
-        }
-
-        CardInfo other = (CardInfo)obj;
-        // Compare the properties of both cardInfo objects to determine equality
-        return Name == other.Name;
-    }
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            int hash = 17;
-            hash = hash * 23 + Name.GetHashCode();
-            return hash;
-        }
     }
 }

@@ -7,7 +7,8 @@ public class GridManager : MonoSingleton<GridManager>
 
     private Tile[,] _grid;
     private List<Tile> _playerTiles = new List<Tile>();
-    readonly int _width = 6, _height = 5;
+    readonly int _width = 6;
+    readonly int _height = 5;
 
     protected override void Init()
     {
@@ -44,16 +45,16 @@ public class GridManager : MonoSingleton<GridManager>
     /// <returns>True if the current player can advance, false otherwise.</returns>
     public bool CanAdvance()
     {
-        bool isPlayer1Turn = TurnManager.Instance.CurrentTurn == GameState.Player1Turn;
+        bool isPlayer1Turn = TurnManager.Instance.CurrentTurn == PlayerTurn.Player1;
         int startColumn = isPlayer1Turn ? 0 : 3;
         int endColumn = isPlayer1Turn ? 3 : 6;
         int frontlineColumn = isPlayer1Turn ? 3 : 2;
 
-        int activeCards = CountActiveCards(startColumn, endColumn);
-        bool emptyFrontline = !CheckColumn(frontlineColumn);
+        bool activeCards = ActiveCards(startColumn, endColumn).Count != 0;
+        bool emptyFrontline = CardsInColumn(frontlineColumn).Count == 0;
 
         Debug.Log($"{(isPlayer1Turn ? "Player 1" : "Player 2")} Active cards: {activeCards} Empty Frontline: {emptyFrontline}");
-        return activeCards > 0 && emptyFrontline;
+        return activeCards && emptyFrontline;
     }
 
     /// <summary>
@@ -62,47 +63,42 @@ public class GridManager : MonoSingleton<GridManager>
     /// <param name="startColumn">The starting column index, inclusive.</param>
     /// <param name="endColumn">The ending column index, exclusive.</param>
     /// <returns>The number of active cards in the specified range of columns.</returns>
-    public int CountActiveCards(int startColumn, int endColumn)
+    public List<UnitCard> ActiveCards(int startColumn, int endColumn)
     {
-        int activeCards = 0;
+        List<UnitCard> activeCards = new List<UnitCard>();
 
         for (int x = startColumn; x < endColumn; x++)
         {
-            activeCards += CheckColumn(x) ? 1 : 0;
+            activeCards.AddRange(CardsInColumn(x));
         }
 
         return activeCards;
     }
 
-    public bool CheckColumn(int x)
+    public List<UnitCard> CardsInColumn(int x)
     {
-        for (int y = 0; y < _height; y++)
+        List<UnitCard> cardsInColumn = new List<UnitCard>();
+
+        for (int y = _height - 1; y >= 0; y--)
         {
-            if (TileHasActiveCard(x, y)) return true;
+            if (TileHasActiveCard(x, y))
+            {
+                cardsInColumn.Add(Grid[x, y].ActiveCard);
+            }
         }
 
-        return false;
-    }
-
-    public bool CheckRow(int y)
-    {
-        for (int x = 0; x < _width; x++)
-        {
-            if (TileHasActiveCard(x, y)) return true;
-        }
-
-        return false;
+        return cardsInColumn;
     }
 
     private bool TileHasActiveCard(int x, int y)
     {
-        Debug.Log($"Checking {_grid[x, y]} for active card...");
+        //Debug.Log($"Checking {_grid[x, y]} for active card...");
         return _grid[x, y].ActiveCard;
     }
 
     public void ColumnSetActive(int x, bool value)
     {
-        Debug.Log($"Toggling column {x}");
+        //Debug.Log($"Toggling column {x}");
         for (int y = 0; y < _height; y++)
         {
             _grid[x, y].gameObject.SetActive(value);
@@ -132,4 +128,6 @@ public class GridManager : MonoSingleton<GridManager>
     }
 
     public Tile[,] Grid { get { return _grid; } }
+    public int GridWidth { get { return _width; } }
+    public int GridHeight { get { return _height; } }
 }

@@ -4,23 +4,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class Card : Interactable
+public class UnitCard : Card
 {
     #region PRIVATE VARIABLES
     [Header("Card Information")]
-    [SerializeField] private CardInfo _info;
-    [SerializeField] private bool _isPlayer_1;
-    [SerializeField] private ActionHandler _actionHandler;
+    [SerializeField] private UnitInfo _info;
 
     [Header("Canvas Components")]
-    [SerializeField] private Canvas _canvas;
     [SerializeField] private GameObject _inHandVisuals;
     [SerializeField] private Animator _artAnimator;
     [SerializeField] private TMP_Text _nameText;
     [SerializeField] private TMP_Text _costText;
     [SerializeField] private TMP_Text _attackText;
     [SerializeField] private TMP_Text _healthText;
-    [SerializeField] private TMP_Text _energyText;
 
     [Header("On Board Components")]
     [SerializeField] private Vector3 _tileOffset;
@@ -31,49 +27,46 @@ public class Card : Interactable
 
     private int _power;
     private int _health;
-    private int _energy;
     private int _cost;
     private int _maxHealth;
-    private int _maxEnergy;
-    private bool _isExhausted;
-    private bool _inHand = true;
-    private bool _isSelected;
+    private List<ActionInfo> _actions;
+    private int _nextAction = 0;
     private bool _isProvoked;
     private Tile _currentTile;
     private Collider _cardCollider;
-    private Card _provokingCard;
+    private UnitCard _provokingCard;
     private Arrow _arrow;
-    private Vector3 _initialPosition;
-    private int _initialSortingOrder = 1;
-    private int _hoverSortingOrder = 5;
     #endregion
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         _cardCollider = GetComponent<Collider>();
         _arrow = GameObject.Find("Arrow").GetComponent<Arrow>();
     }
 
     private void Start()
     {
+        _info = (UnitInfo)_cardInfo;
+
         InitializeVariables();
 
         _artRenderer.enabled = false;
-        _artRenderer.flipX = !_isPlayer_1;
-
-        _actionHandler.Initialize(_info);
     }
 
-    private void Update()
+    protected override void Update()
     {
-        transform.rotation = Camera.main.transform.rotation;
+        base.Update();
 
         if (_isSelected)
         {
             _arrow.IsSelected = true;
             if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonUp(0))
             {
-                PlayToTile();
+                Tile targetTile = RaycastToBoard(Camera.main.ScreenPointToRay(Input.mousePosition));
+
+                PlayToTile(targetTile);
             }
 
             if (Input.GetMouseButtonDown(1))
@@ -86,54 +79,30 @@ public class Card : Interactable
         }
     }
 
-    protected override void OnLeftClick()
+    #region EVENTS
+    protected override void OnAdvance(PlayerTurn turn)
     {
-        if (TurnManager.Instance.CurrentTurn == GameState.Player1Turn && _inHand && PlayerManager.Instance.CanPlayCard(_cost))
+        if (!_inHand)
         {
-            _isSelected = !_isSelected;
-            GridManager.Instance.TogglePlayerSpaces(true);
-
-            Debug.Log($"{_info.Name} is selected.");
+            StartCoroutine(AdvanceCoroutine());
         }
     }
+    #endregion
 
-    protected override void OnRightClick()
+    #region PLACEMENT/ADVANCING
+    public void PlayToTile(Tile targetTile)
     {
-        //Show extended information.
-    }
-
-    public void OnMouseEnter()
-    {
-        _initialPosition = transform.position;
-
-        // Raise the card and increase its canvas sorting order when hovered over
-        transform.position = _initialPosition + new Vector3(0, .5f, 0);
-        _canvas.sortingOrder = _initialSortingOrder + _hoverSortingOrder;
-    }
-
-    public void OnMouseExit()
-    {
-        // Reset the card's position and canvas sorting order when no longer hovered over
-        transform.position = _initialPosition;
-        _canvas.sortingOrder = _initialSortingOrder;
-    }
-
-    private void PlayToTile()
-    {
-        if (!PlayerManager.Instance.CanPlayCard(_cost))
+        if (!PlayerManager.Instance.CanPlayCard(_cost, _isPlayer_1 ? 1 : 2))
         {
             GridManager.Instance.TogglePlayerSpaces(false);
             Debug.LogWarning("Not enough supply to play this card.");
             return;
         }
 
-        Tile targetTile = RaycastToBoard(Camera.main.ScreenPointToRay(Input.mousePosition));
-        if (targetTile != null)
+        if (targetTile != null && !targetTile.HasCard)
         {
+            ChangeTile(targetTile);
             EnterPlay();
-
-            if (!targetTile.HasCard)
-                ChangeTile(targetTile);
 
             _isSelected = false;
             _arrow.IsSelected = false;
@@ -141,37 +110,31 @@ public class Card : Interactable
         }
     }
 
-    #region ADVANCING/MOVEMENT METHODS
-    void StartAdvance(GameState state)
-    {
-        StartCoroutine(AdvanceCoroutine());
-    }
-
     /// <summary>
     /// Coroutine that advances the card if it's the owner's turn.
     /// </summary>
     /// <returns>An IEnumerator to be used in a coroutine.</returns>
-    IEnumerator AdvanceCoroutine()
+    private IEnumerator AdvanceCoroutine()
     {
         if (IsOwnersTurn())
         {
+            Debug.Log("Animation called.");
             PlayAnimation(1);
             yield return new WaitForSeconds(0.6f);
             PlayAnimation(0);
             yield break;
         }
 
-        Vector3 targetPosition = CalculateTargetPosition();
-        while (ShouldKeepMoving(targetPosition))
+        Tile targetTile = GetTargetTile();
+        if (targetTile != null)
         {
-            MoveCard(2 * Time.deltaTime);
-            yield return null;
-        }
+            while (ShouldKeepMoving(targetTile.transform.position))
+            {
+                MoveCard(2 * Time.deltaTime);
+                yield return null;
+            }
 
-        Tile hitSpace = RaycastToBoard(new Ray(transform.position, transform.forward));
-        if (hitSpace != null)
-        {
-            ChangeTile(hitSpace);
+            ChangeTile(targetTile);
         }
     }
 
@@ -179,12 +142,12 @@ public class Card : Interactable
     /// Calculates the target position for the card.
     /// </summary>
     /// <returns>The target position as a Vector3.</returns>
-    private Vector3 CalculateTargetPosition()
+    private Tile GetTargetTile()
     {
         int direction = _isPlayer_1 ? 1 : -1;
         int x = _currentTile.GridPosition.x + direction;
         int y = _currentTile.GridPosition.y;
-        return GridManager.Instance.Grid[x, y].transform.position;
+        return GridManager.Instance.Grid[x, y];
     }
 
     /// <summary>
@@ -237,14 +200,36 @@ public class Card : Interactable
     }
     #endregion
 
+    #region ACTION SYSTEM
+    public float TriggerAction()
+    {
+        ActionInfo action = _actions[_nextAction];
+        List<UnitCard> targetCards = ActionSystem.TargetCards(this, action);
+
+        if (targetCards.Count <= 0)
+        {
+            return 0;
+        }
+
+        float actionAnimLength = PlayActionAnimation(_nextAction) + .5f;
+        ActionSystem.PerformAction(this, action, targetCards);
+
+        _nextAction++;
+        if (_nextAction >= _actions.Count)
+        {
+            _nextAction = 0;
+        }
+
+        return actionAnimLength;
+    }
+    #endregion
+
     #region STAT METHODS
     /// <summary>
     /// Triggers the card's death behavior.
     /// </summary>
     void TriggerDeath()
     {
-        UnsubscribeEvents();
-
         _currentTile.ResetTile();
         PlayDeathAnimation();
         Destroy(gameObject, 1);
@@ -272,66 +257,24 @@ public class Card : Interactable
         UpdateText();
     }
 
-    public void LowerEnergy(int amount)
-    {
-        _energy -= amount;
-        Debug.Log($"Energy lowered to {_energy}");
-
-        UpdateText();
-
-        if (_energy <= 0)
-        {
-            SetExhausted(true);
-        }
-    }
-
-    public void SetExhausted(bool isExhausted)
-    {
-        _isExhausted = isExhausted;
-        Debug.Log($"Exhausted set to: {_isExhausted}");
-
-        if (isExhausted)
-        {
-            SetCardColor(_exhaustedColor);
-            _energy = 0;
-        }
-        else
-        {
-            SetCardColor(_defaultColor);
-            _energy = _maxEnergy;
-        }
-
-        UpdateText();
-    }
-
-    public void SetProvoked(bool value, Card provokingCard)
+    public void SetProvoked(bool value, UnitCard provokingCard)
     {
         _isProvoked = value;
         _provokingCard = provokingCard;
     }
-
-    public void RefreshCard(GameState state)
-    {
-        if (!IsOwnersTurn())
-            return;
-
-        _energy = _maxEnergy;
-        SetExhausted(false);
-    }
     #endregion
 
-    #region INITIALIZE METHODS
+    #region INITIALIZATION
     void InitializeVariables()
     {
         _info.Init();
 
         _power = _info.Power;
         _health = _info.Health;
-        _energy = _info.Energy;
         _cost = _info.Cost;
+        _actions = _info.Actions;
 
         _maxHealth = _info.Health;
-        _maxEnergy = _info.Energy;
 
         _nameText.text = _info.Name;
 
@@ -340,20 +283,20 @@ public class Card : Interactable
 
     void EnterPlay()
     {
+        _isPlayer_1 = _currentTile.GridPosition.x < 3;
+        _artRenderer.flipX = !_isPlayer_1;
+
         _cardCollider.enabled = false;
         _inHand = false;
         _inHandVisuals.SetActive(false);
         _shadowRenderer.enabled = true;
         _artRenderer.enabled = true;
-        _actionHandler.InHand = false;
 
         HandManager.Instance.RemoveCardFromHand(gameObject);
         HandManager.Instance.CenterCardsInHand();
 
-        PlayerManager.Instance.LowerSupply(_cost);
+        PlayerManager.Instance.LowerSupply(_cost, _isPlayer_1 ? 1 : 2);
         PlayerManager.Instance.UpdateSupplyText();
-
-        SubscribeEvents();
     }
 
     void EnterHand()
@@ -363,79 +306,146 @@ public class Card : Interactable
         _inHandVisuals.SetActive(true);
         _shadowRenderer.enabled = false;
         _artRenderer.enabled = false;
-        _actionHandler.InHand = true;
-
-        UnsubscribeEvents();
     }
 
     void UpdateText()
     {
         _healthText.text = _health.ToString();
         _attackText.text = _power.ToString();
-        _energyText.text = _energy.ToString();
         _costText.text = _cost.ToString();
-    }
-
-    void SubscribeEvents()
-    {
-        TurnManager.Instance.Advance += StartAdvance;
-        TurnManager.Instance.EndTurn += RefreshCard;
-    }
-
-    void UnsubscribeEvents()
-    {
-        TurnManager.Instance.Advance -= StartAdvance;
-        TurnManager.Instance.EndTurn -= RefreshCard;
     }
     #endregion
 
-    #region ANIMATION METHODS
+    #region ANIMATION
     /// <summary>
     /// Plays the specified animation.
     /// </summary>
     /// <param name="animationState">The animation state to set.</param>
     private void PlayAnimation(int animationState)
     {
-        _artAnimator.SetInteger("AnimState", animationState);
+        if (_artAnimator != null)
+        {
+            _artAnimator.SetInteger("AnimState", animationState);
+        }
+        else
+        {
+            Debug.LogWarning("Animator is null. Cannot play animation.");
+        }
     }
 
     private void PlayDeathAnimation()
     {
-        _artAnimator.SetTrigger("Death");
+        if (_artAnimator != null)
+        {
+            _artAnimator.SetTrigger("Death");
+        }
+        else
+        {
+            Debug.LogWarning("Animator is null. Cannot play death animation.");
+        }
     }
 
     private void PlayHurtAnimation()
     {
-        _artAnimator.SetTrigger("Hurt");
+        if (_artAnimator != null)
+        {
+            _artAnimator.SetTrigger("Hurt");
+        }
+        else
+        {
+            Debug.LogWarning("Animator is null. Cannot play hurt animation.");
+        }
     }
 
     private void SetCardColor(Color color)
     {
-        _artRenderer.color = color;
+        if (_artRenderer != null)
+        {
+            _artRenderer.color = color;
+        }
+        else
+        {
+            Debug.LogWarning("Renderer is null. Cannot set card color.");
+        }
+    }
+
+    private float PlayActionAnimation(int animationState)
+    {
+        if (_artAnimator != null)
+        {
+            animationState++;
+            _artAnimator.SetInteger("ActionState", animationState);
+
+            float animationLength = GetAnimationLength($"Action{animationState}");
+            StartCoroutine(ResetActionState(animationLength));
+
+            return animationLength;
+        }
+        else
+        {
+            Debug.LogWarning("Animator is null. Cannot play action animation.");
+            return 0f;
+        }
+    }
+
+    private IEnumerator ResetActionState(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        if (_artAnimator != null)
+        {
+            _artAnimator.SetInteger("ActionState", 0);
+        }
+        else
+        {
+            Debug.LogWarning("Animator is null. Cannot reset action state.");
+        }
+    }
+
+    private float GetAnimationLength(string animationClipName)
+    {
+        if (_artAnimator != null)
+        {
+            AnimatorControllerParameter[] parameters = _artAnimator.parameters;
+            RuntimeAnimatorController runtimeAnimatorController = _artAnimator.runtimeAnimatorController;
+            AnimationClip[] animationClips = runtimeAnimatorController.animationClips;
+
+            foreach (AnimationClip clip in animationClips)
+            {
+                if (clip.name == animationClipName)
+                {
+                    return clip.length;
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Animator is null. Cannot get animation length.");
+        }
+
+        Debug.LogWarning($"Animation clip '{animationClipName}' not found.");
+        return 0f;
     }
     #endregion
 
     bool IsOwnersTurn()
     {
-        if ((_isPlayer_1 && TurnManager.Instance.CurrentTurn == GameState.Player1Turn)
-            || (!_isPlayer_1 && TurnManager.Instance.CurrentTurn == GameState.Player2Turn))
+        if ((_isPlayer_1 && TurnManager.Instance.CurrentTurn == PlayerTurn.Player1)
+            || (!_isPlayer_1 && TurnManager.Instance.CurrentTurn == PlayerTurn.Player2))
             return true;
         else
             return false;
     }
 
-    #region PUBLIC GET VARIABLES
+    #region PUBLIC VARIABLES
+    public string GetName { get { return _info.Name; } }
     public int GetPower { get { return _power; } }
     public int GetHealth { get { return _health; } }
-    public int GetEnergy { get { return _energy; } }
-    public bool IsPlayer_1 { get { return _isPlayer_1; } }
-    public bool IsExhausted { get { return _isExhausted; } }
     public bool IsProvoked { get { return _isProvoked; } }
-    public CardInfo CardInfo { get { return _info; } set { _info = value; } }
-    public Tile CurrentSpace { get { return _currentTile; } }
+    public List<ActionInfo> GetActions { get { return _actions; } }
+    public Tile CurrentTile { get { return _currentTile; } set { _currentTile = value; } }
     public Animator GetAnimator { get { return _artAnimator; } }
-    public Card GetProvokingCard { get { return _provokingCard; } }
-    public ActionHandler ActionHandler { get { return _actionHandler; } }
+    public UnitCard GetProvokingCard { get { return _provokingCard; } }
     public Canvas GetCanvas { get { return _canvas; } }
     #endregion
 }

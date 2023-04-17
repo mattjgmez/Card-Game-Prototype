@@ -14,13 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: Resolute Defender
   _health: 20
-  _power: 0
-  _energy: 5
+  _power: 3
   _cost: 0
   _keywords: []
   _actions:
   - {fileID: 11400000, guid: 684243b28c3c2f94ebc5888535957f50, type: 2}
   - {fileID: 11400000, guid: b3521f1ab44b754428ea1155d0487b5b, type: 2}
+  _tribes: 
   _sprite: {fileID: 21300000, guid: 300ea1a5869382b43bf6149aba92c4db, type: 3}
   _animController: {fileID: 9100000, guid: 1d4af8c325522f144a3ebdefb8d089f1, type: 2}
-  _realm: 0

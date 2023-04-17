@@ -14,13 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: Skilled Archer
   _health: 8
-  _power: 0
-  _energy: 9
+  _power: 4
   _cost: 0
   _keywords: []
   _actions:
   - {fileID: 11400000, guid: ca614d0555add904ba36f21a4414e705, type: 2}
   - {fileID: 11400000, guid: 9d233abc9e1766242a4fc765db303c7d, type: 2}
+  _tribes: 
   _sprite: {fileID: 21300000, guid: 300ea1a5869382b43bf6149aba92c4db, type: 3}
   _animController: {fileID: 9100000, guid: 1d4af8c325522f144a3ebdefb8d089f1, type: 2}
-  _realm: 0

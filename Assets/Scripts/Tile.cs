@@ -7,7 +7,7 @@ public class Tile : MonoBehaviour
     [SerializeField] private Color _defaultColor, _activeColor;
     [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private GameObject _highlight;
-    [SerializeField] private Card _activeCard;
+    [SerializeField] private UnitCard _activeCard;
 
     private bool _hasCard = false;
     private bool _isPlayer_1;
@@ -19,14 +19,6 @@ public class Tile : MonoBehaviour
         SetTileActive(false);
 
         ResetTile();
-    }
-
-    private void OnMouseDown()
-    {
-        if (_hasCard && !_activeCard.IsExhausted && !TurnManager.Instance.ObjectSelected)
-        {
-            _activeCard.ActionHandler.Selected = !_activeCard.ActionHandler.Selected;
-        }
     }
 
     private void OnMouseEnter()
@@ -44,7 +36,7 @@ public class Tile : MonoBehaviour
         _gridPosition = new Vector2Int(x, y);
     }
 
-    public void SetCard(Card card)
+    public void SetCard(UnitCard card)
     {
         _activeCard = card;
         _hasCard = true;
@@ -70,7 +62,7 @@ public class Tile : MonoBehaviour
         _isPlayer_1 = value;
     }
 
-    public Card ActiveCard { get { return _activeCard; } }
+    public UnitCard ActiveCard { get { return _activeCard; } }
     public bool HasCard { get { return _hasCard; } }
     public bool GetIsPlayer1 { get { return _isPlayer_1; } }
     public Vector2Int GridPosition { get { return _gridPosition; } }

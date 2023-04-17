@@ -6,12 +6,11 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Action", menuName = "ScriptableObjects/Action")]
 public class ActionInfo : ScriptableObject
 {
-    [SerializeField] int _cost;
     [SerializeField] string _name;
     [SerializeField] string _description;
     [SerializeField] Sprite _sprite;
-    [SerializeField] List<ActionKeywords> _keywords;
     [SerializeField] ActionRange _range;
+    [SerializeField] List<ActionKeywords> _keywords;
     [SerializeField, Header("Order of bools: Enemies, Allies, Self")] List<bool> _validTargets = new List<bool>
     {
         { false },
@@ -22,12 +21,6 @@ public class ActionInfo : ScriptableObject
     public bool HasKeyword(ActionKeywords keyword)
     {
         return _keywords.Contains(keyword);
-    }
-
-    public int Cost
-    {
-        get { return _cost; }
-        set { _cost = value; }
     }
 
     public string Name

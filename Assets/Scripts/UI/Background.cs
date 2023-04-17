@@ -6,22 +6,22 @@ public class Background : MonoBehaviour
 {
     private void OnEnable()
     {
-        TurnManager.Instance.Advance += ScrollBackground;
+        TurnManager.Instance.AdvancePhase += ScrollBackground;
     }
 
     private void OnDisable()
     {
-        TurnManager.Instance.Advance -= ScrollBackground;
+        TurnManager.Instance.AdvancePhase -= ScrollBackground;
     }
 
-    private void ScrollBackground(GameState state)
+    private void ScrollBackground(PlayerTurn state)
     {
         StartCoroutine(ScrollBackgroundCoroutine());
     }
 
     private IEnumerator ScrollBackgroundCoroutine()
     {
-        bool isPlayer1Turn = TurnManager.Instance.CurrentTurn == GameState.Player1Turn;
+        bool isPlayer1Turn = TurnManager.Instance.CurrentTurn == PlayerTurn.Player1;
 
         int direction = isPlayer1Turn ? -1 : 1;
         Vector3 targetPosition = transform.position + new Vector3(direction, 0);

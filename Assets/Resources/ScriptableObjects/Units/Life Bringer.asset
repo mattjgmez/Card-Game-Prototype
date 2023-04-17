@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd287c3aa76071349975e6c1ebca7a02, type: 3}
   m_Name: Life Bringer
   m_EditorClassIdentifier: 
+  _name: Life Bringer
   _health: 12
-  _power: 0
-  _energy: 8
+  _power: 5
   _cost: 0
   _keywords: []
   _actions:

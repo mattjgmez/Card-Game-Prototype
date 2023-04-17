@@ -11,11 +11,13 @@ using UnityEngine.UI;
 public class CardCollectionManager : MonoSingleton<CardCollectionManager>
 {
     [SerializeField] private int _deckLimit = 30;
-    [SerializeField] private GameObject _cardPrefab;
+    [SerializeField] private GameObject _unitCardPrefab;
+    [SerializeField] private GameObject _spellCardPrefab;
     [SerializeField] private GameObject _cardInDeckPrefab;
     [SerializeField] private Transform _cardContainer;
     [SerializeField] private Transform _cardInDeckContainer;
-    [SerializeField] private List<CardInfo> _availableCards;
+    [SerializeField] private List<UnitInfo> _availableUnitCards;
+    [SerializeField] private List<SpellInfo> _availableSpellCards;
     [SerializeField] private TMP_InputField _deckNameInputField;
     [SerializeField] private TMP_Text _deckLimitText;
     [SerializeField] private ScrollRect _scrollRect;
@@ -35,16 +37,42 @@ public class CardCollectionManager : MonoSingleton<CardCollectionManager>
     /// </summary>
     private void PopulateCardCollection()
     {
-        foreach (CardInfo cardInfo in _availableCards)
+        foreach (CardInfo cardInfo in _availableUnitCards)
         {
-            GameObject card = Instantiate(_cardPrefab, _cardContainer);
-            CardUI cardUI = card.GetComponent<CardUI>();
+            AddCardToCollection(cardInfo);
+        }
 
-            if (cardUI != null)
-            {
-                cardUI.SetCardInfo(cardInfo);
-                cardUI.OnCardClicked += AddCardToDeck;
-            }
+        foreach (CardInfo cardInfo in _availableSpellCards)
+        {
+            AddCardToCollection(cardInfo);
+        }
+    }
+
+    private void AddCardToCollection(CardInfo cardInfo)
+    {
+        GameObject cardPrefab = null;
+
+        if (cardInfo is UnitInfo)
+        {
+            cardPrefab = _unitCardPrefab;
+        }
+        else if (cardInfo is SpellInfo)
+        {
+            cardPrefab = _spellCardPrefab;
+        }
+        else
+        {
+            Debug.LogError("Invalid CardInfo type.");
+            return;
+        }
+
+        GameObject card = Instantiate(cardPrefab, _cardContainer);
+        CardUI cardUI = card.GetComponent<CardUI>();
+
+        if (cardUI != null)
+        {
+            cardUI.SetCardInfo(cardInfo);
+            cardUI.OnCardClicked += AddCardToDeck;
         }
     }
 

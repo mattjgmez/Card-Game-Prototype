@@ -4,39 +4,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class CardUI : Interactable
+public abstract class CardUI : Interactable
 {
-    [Header("Card Information")]
-    [SerializeField] private CardInfo _info;
-    [SerializeField] private ActionHandler _actionHandler;
-
     [Header("Canvas Components")]
-    [SerializeField] private TMP_Text _nameText;
-    [SerializeField] private TMP_Text _costText;
-    [SerializeField] private TMP_Text _powerText;
-    [SerializeField] private TMP_Text _healthText;
-    [SerializeField] private TMP_Text _energyText;
+    [SerializeField] protected TMP_Text _nameText;
 
     public event Action<CardInfo> OnCardClicked;
 
-    public void SetCardInfo(CardInfo info)
-    {
-        _info = info;
-        UpdateUI();
-    }
+    public abstract void SetCardInfo(CardInfo info);
 
-    private void UpdateUI()
-    {
-        _healthText.text = _info.Health.ToString();
-        _powerText.text = _info.Power.ToString();
-        _energyText.text = _info.Energy.ToString();
-        _costText.text = _info.Cost.ToString();
-
-        _nameText.text = _info.Name;
-    }
+    protected abstract void UpdateUI();
 
     protected override void OnLeftClick()
     {
-        OnCardClicked?.Invoke(_info);
+        OnCardClicked?.Invoke(GetCardInfo());
     }
+
+    protected abstract CardInfo GetCardInfo();
 }

@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: Earthshaker
   _health: 18
-  _power: 0
-  _energy: 2
+  _power: 6
   _cost: 0
   _keywords: []
   _actions:

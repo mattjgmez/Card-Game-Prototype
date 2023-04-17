@@ -87,6 +87,10 @@ public static class SaveDeckSystem
         foreach (string cardName in cardNamesList)
         {
             CardInfo cardInfo = Resources.Load<CardInfo>($"ScriptableObjects/Units/{cardName}");
+            if (cardInfo == null)
+            {
+                cardInfo = Resources.Load<CardInfo>($"ScriptableObjects/Spells/{cardName}");
+            }
 
             if (cardInfo != null)
             {
@@ -114,12 +118,12 @@ public static class SaveDeckSystem
     /// </summary>
     /// <param name="cardName">The name of the card for which to load the actions.</param>
     /// <returns>A List of Action ScriptableObjects related to the card.</returns>
-    public static List<Action> LoadActionsForCard(string cardName)
+    public static List<ActionInfo> LoadActionsForCard(string cardName)
     {
         string actionsFolderPath = $"ScriptableObjects/Actions/{cardName}";
 
         // Load all Action ScriptableObjects found in the actionsFolderPath.
-        Action[] actionsArray = Resources.LoadAll<Action>(actionsFolderPath);
+        ActionInfo[] actionsArray = Resources.LoadAll<ActionInfo>(actionsFolderPath);
 
         if (actionsArray.Length == 0)
         {
@@ -127,7 +131,7 @@ public static class SaveDeckSystem
         }
 
         // Convert the loaded Action array into a List.
-        List<Action> actionsList = new List<Action>(actionsArray);
+        List<ActionInfo> actionsList = new List<ActionInfo>(actionsArray);
 
         return actionsList;
     }

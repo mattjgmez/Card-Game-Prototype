@@ -14,13 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: Elementalist
   _health: 12
-  _power: 0
-  _energy: 4
+  _power: 5
   _cost: 0
   _keywords: []
   _actions:
   - {fileID: 11400000, guid: 81df9842a4d9f054cb504cbe0b7908f1, type: 2}
   - {fileID: 11400000, guid: 3431ed4b5385d0d4aa5c3765a4c99339, type: 2}
+  _tribes: 
   _sprite: {fileID: 21300000, guid: 300ea1a5869382b43bf6149aba92c4db, type: 3}
   _animController: {fileID: 9100000, guid: 1d4af8c325522f144a3ebdefb8d089f1, type: 2}
-  _realm: 0
