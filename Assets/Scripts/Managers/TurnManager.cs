@@ -2,8 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static GridSystem;
 
-public enum PlayerTurn { Player1 = 0, Player2 = 1 }
+public enum PlayerTurn { Player1 = 1, Player2 = 2 }
 public enum TurnPhase { Start = 0, Play = 1, Action = 2, Advance = 3, Draw = 4, End = 5 }
 
 public class TurnManager : MonoSingleton<TurnManager>
@@ -16,34 +17,44 @@ public class TurnManager : MonoSingleton<TurnManager>
     public event TurnStateDelegate DrawPhase;
     public event TurnStateDelegate EndPhase;
 
-    [SerializeField] int _scale = 0;
-    [SerializeField] PlayerTurn _currentTurn;
-    [SerializeField] TurnPhase _currentTurnState;
+    [SerializeField] private int _scale = 0;
+    [SerializeField] private PlayerTurn _currentTurn;
+    [SerializeField] private TurnPhase _currentTurnState;
 
-    private int _currentTurnNumber = 1;
+    [SerializeField] private int _currentNumberOfTurns = 1;
+    [SerializeField] private int _currentNumberOfRounds = 0;
+    private bool _isFirstRound = true;
     private List<UnitCard> _activeCards = new List<UnitCard>();
 
     private void Start()
     {
-        AdvancePhase += IncrementScale;
+        StartCoroutine(InitializeGame());
     }
 
-    private void Update()
+    private IEnumerator InitializeGame()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
-            Debug.Log("Can advance is:" + GridManager.Instance.CanAdvance());
+        // Randomly set _currentTurn to either PlayerTurn.Player1 or PlayerTurn.Player2
+        _currentTurn = (UnityEngine.Random.Range(0, 2) == 0) ? PlayerTurn.Player1 : PlayerTurn.Player2;
+
+        yield return new WaitForSeconds(1);
+
+        _currentTurnState = TurnPhase.Start;
+        ExecuteCurrentTurnState();
     }
 
     public void NextPhase()
     {
         if (_currentTurnState == TurnPhase.End)
         {
+            _currentNumberOfTurns++;
+
             bool Player1Turn = _currentTurn == PlayerTurn.Player1;
             _currentTurn = Player1Turn ? PlayerTurn.Player2 : PlayerTurn.Player1;
 
-            if (Player1Turn)
+            if (_currentNumberOfTurns % 2 == 0)
             {
-                _currentTurnNumber++;
+                _isFirstRound = false;
+                _currentNumberOfRounds++;
             }
 
             _currentTurnState = TurnPhase.Start;
@@ -61,17 +72,19 @@ public class TurnManager : MonoSingleton<TurnManager>
         switch (_currentTurnState)
         {
             case TurnPhase.Start:
-                Debug.Log("StartTurn event called.");
+                //Debug.Log("StartTurn event called.");
                 StartPhase?.Invoke(_currentTurn);
+
+                NextPhase(); //The start phase is currently a placeholder
                 break;
 
             case TurnPhase.Play:
-                Debug.Log("PlayPhase event called.");
+                //Debug.Log("PlayPhase event called.");
                 PlayPhase?.Invoke(_currentTurn);
                 break;
 
             case TurnPhase.Action:
-                Debug.Log("ActionPhase event called.");
+                //Debug.Log("ActionPhase event called.");
                 ActionPhase?.Invoke(_currentTurn);
 
                 PrepareActionPhase();
@@ -79,21 +92,21 @@ public class TurnManager : MonoSingleton<TurnManager>
                 break;
 
             case TurnPhase.Advance:
-                if (GridManager.Instance.CanAdvance())
-                {
-                    Debug.Log("Advance event called.");
-                    AdvancePhase?.Invoke(_currentTurn);
-                }
+                StartCoroutine(ExecuteAdvance());
                 break;
 
             case TurnPhase.Draw:
-                Debug.Log("DrawCards event called.");
+                //Debug.Log("DrawCards event called.");
                 DrawPhase?.Invoke(_currentTurn);
+
+                NextPhase();
                 break;
 
             case TurnPhase.End:
-                Debug.Log("EndTurn event called.");
+                //Debug.Log("EndTurn event called.");
                 EndPhase?.Invoke(_currentTurn);
+
+                NextPhase(); //The end phase is currently a placeholder
                 break;
         }
     }
@@ -104,7 +117,7 @@ public class TurnManager : MonoSingleton<TurnManager>
         _activeCards.Clear();
 
         _activeCards = GetActiveCards();
-        Debug.Log($"Active cards: {_activeCards}");
+        //Debug.Log($"Active cards: {_activeCards}");
     }
 
     public List<UnitCard> GetActiveCards()
@@ -116,7 +129,7 @@ public class TurnManager : MonoSingleton<TurnManager>
 
         for (int x = startColumn; x < endColumn; x++)
         {
-            List<UnitCard> cardsInColumn = GridManager.Instance.CardsInColumn(x);
+            List<UnitCard> cardsInColumn = CardsInColumn(GridManager.Instance.Grid, x);
             activeCards.AddRange(cardsInColumn);
         }
 
@@ -136,13 +149,29 @@ public class TurnManager : MonoSingleton<TurnManager>
     #endregion
 
     /// <summary>
+    /// Responsible for automating advance phase, invokes the AdvancePhase event and waits before moving to next phase.
+    /// </summary>
+    private IEnumerator ExecuteAdvance()
+    {
+        if (GridManager.Instance.CanAdvance())
+        {
+            //Debug.Log("Advance event called.");
+            IncrementScale();
+            AdvancePhase?.Invoke(_currentTurn);
+
+            yield return new WaitForSeconds(2f);
+        }
+
+        NextPhase();
+    }
+
+    /// <summary>
     /// Increments or decrements the scale based on the current game state and updates the visibility of columns accordingly.
     /// Triggers a win condition when the scale reaches +5 or -5.
     /// </summary>
-    /// <param name="state">The current game state, either Player1Turn or Player2Turn.</param>
-    public void IncrementScale(PlayerTurn state)
+    public void IncrementScale()
     {
-        bool player1Turn = state == PlayerTurn.Player1;
+        bool player1Turn = _currentTurn == PlayerTurn.Player1;
 
         _scale += player1Turn ? 1 : -1;
 
@@ -178,5 +207,6 @@ public class TurnManager : MonoSingleton<TurnManager>
     public int Scale { get { return _scale; } }
     public PlayerTurn CurrentTurn { get { return _currentTurn; } }
     public TurnPhase CurrentTurnPhase { get { return _currentTurnState; } }
-    public int CurrentTurnNumber { get {  return _currentTurnNumber; } }
+    public int CurrentNumberOfTurns { get {  return _currentNumberOfTurns; } }
+    public bool IsFirstRound { get { return _isFirstRound; } }
 }

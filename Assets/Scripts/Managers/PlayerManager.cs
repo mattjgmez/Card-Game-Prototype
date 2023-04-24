@@ -18,14 +18,19 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
         _supply_Player1 = _maxSupply;
         _supply_Player2 = _maxSupply;
-        _supplyText_Player1 = GameObject.Find("UI_Supply_Text").GetComponent<TMP_Text>();
+        _supplyText_Player1 = GameObject.Find("UI_Supply1_Text").GetComponent<TMP_Text>();
+        _supplyText_Player2 = GameObject.Find("UI_Supply2_Text").GetComponent<TMP_Text>();
 
-        UpdateSupplyText();
+        UpdateSupplyText(1);
+        UpdateSupplyText(2);
     }
 
-    public void UpdateSupplyText()
+    public void UpdateSupplyText(int player)
     {
-        UIManager.Instance.UpdateUIText(_supplyText_Player1, _supply_Player1.ToString());
+        TMP_Text text = player == 1 ? _supplyText_Player1 : _supplyText_Player2;
+        int supply = player == 1 ? _supply_Player1 : _supply_Player2;
+
+        UIManager.Instance.UpdateUIText(text, supply.ToString());
     }
 
     public bool CanPlayCard(int cost, int player)

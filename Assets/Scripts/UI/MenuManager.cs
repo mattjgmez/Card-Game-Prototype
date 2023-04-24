@@ -35,6 +35,6 @@ public class MenuManager : MonoBehaviour
             _menus[i].enabled = i == (int)activeMenuIndex;
         }
 
-        GameManager.Instance.CurrentDeck = default;
+        GameManager.Instance.CurrentDeck_Player1 = default;
     }
 }

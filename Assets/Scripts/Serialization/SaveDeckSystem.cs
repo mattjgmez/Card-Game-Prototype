@@ -57,7 +57,7 @@ public static class SaveDeckSystem
 
         string json = JsonConvert.SerializeObject(cardNamesList, Formatting.Indented);
         File.WriteAllText(filePath, json);
-        DebugDeck(deck, deckName, $"{deckName} saved to file.");
+        //DebugDeck(deck, deckName, $"{deckName} saved to file.");
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public static class SaveDeckSystem
             }
         }
 
-        DebugDeck(deck, deckName, $"{deckName} loaded from file.");
+        //DebugDeck(deck, deckName, $"{deckName} loaded from file.");
         return deck;
     }
 
@@ -155,4 +155,46 @@ public static class SaveDeckSystem
 
         Debug.Log(sb.ToString());
     }
+
+    public static List<(Dictionary<CardInfo, int>, string)> DecksInFolder(string folderName)
+    {
+        // Create a list to store the saved decks and their names.
+        List<(Dictionary<CardInfo, int>, string)> savedDecks = new List<(Dictionary<CardInfo, int>, string)>();
+
+        // Get the CustomDecks directory path.
+        string customDecksPath = Application.persistentDataPath + $"/{folderName}";
+
+        // Check if the CustomDecks directory exists.
+        if (Directory.Exists(customDecksPath))
+        {
+            // Get all deck files in the CustomDecks directory.
+            string[] deckFiles = Directory.GetFiles(customDecksPath, "*.json");
+
+            // Iterate through each deck file.
+            foreach (string deckFile in deckFiles)
+            {
+                // Get the deck name from the file name without the extension.
+                string deckName = Path.GetFileNameWithoutExtension(deckFile);
+
+                // Try to load the deck and add it to the list.
+                try
+                {
+                    // Load the deck dictionary using the SaveDeckSystem.
+                    Dictionary<CardInfo, int> deck = SaveDeckSystem.LoadDeckFromFile(deckName);
+
+                    // Add the loaded deck and its name to the savedDecks list.
+                    savedDecks.Add((deck, deckName));
+                }
+                catch (FileNotFoundException)
+                {
+                    // Log an error if the deck file is not found.
+                    Debug.LogError($"Deck file not found: {deckFile}");
+                }
+            }
+        }
+
+        // Return the list of saved decks and their names.
+        return savedDecks;
+    }
+
 }

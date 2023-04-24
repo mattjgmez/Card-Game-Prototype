@@ -124,7 +124,10 @@ public static class ActionSystem
                 Tile overkillTargetTile = GridManager.Instance.Grid[targetTile.GridPosition.x + 1, targetTile.GridPosition.y];
                 UnitCard overkillTarget = overkillTargetTile.ActiveCard;
 
-                overkillTarget.TakeDamage(overkillDamage, action.HasKeyword(ActionKeywords.DeathTouch));
+                if(overkillTarget != null)
+                {
+                    overkillTarget.TakeDamage(overkillDamage, action.HasKeyword(ActionKeywords.DeathTouch));
+                }
             }
         }
 

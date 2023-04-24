@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Tile : MonoBehaviour
@@ -12,7 +14,6 @@ public class Tile : MonoBehaviour
     private bool _hasCard = false;
     private bool _isPlayer_1;
     private Vector2Int _gridPosition;
-
 
     private void Start()
     {
@@ -62,7 +63,7 @@ public class Tile : MonoBehaviour
         _isPlayer_1 = value;
     }
 
-    public UnitCard ActiveCard { get { return _activeCard; } }
+    public UnitCard ActiveCard { get { return _activeCard; } set { _activeCard = value; } }
     public bool HasCard { get { return _hasCard; } }
     public bool GetIsPlayer1 { get { return _isPlayer_1; } }
     public Vector2Int GridPosition { get { return _gridPosition; } }

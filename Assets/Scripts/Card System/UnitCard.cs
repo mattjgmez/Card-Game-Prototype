@@ -8,7 +8,7 @@ public class UnitCard : Card
 {
     #region PRIVATE VARIABLES
     [Header("Card Information")]
-    [SerializeField] private UnitInfo _info;
+    //[SerializeField] private UnitInfo _info;
 
     [Header("Canvas Components")]
     [SerializeField] private GameObject _inHandVisuals;
@@ -25,6 +25,7 @@ public class UnitCard : Card
     [SerializeField] private Color _defaultColor;
     [SerializeField] private Color _exhaustedColor;
 
+    //private string _name;
     private int _power;
     private int _health;
     private int _cost;
@@ -44,15 +45,6 @@ public class UnitCard : Card
 
         _cardCollider = GetComponent<Collider>();
         _arrow = GameObject.Find("Arrow").GetComponent<Arrow>();
-    }
-
-    private void Start()
-    {
-        _info = (UnitInfo)_cardInfo;
-
-        InitializeVariables();
-
-        _artRenderer.enabled = false;
     }
 
     protected override void Update()
@@ -118,7 +110,6 @@ public class UnitCard : Card
     {
         if (IsOwnersTurn())
         {
-            Debug.Log("Animation called.");
             PlayAnimation(1);
             yield return new WaitForSeconds(0.6f);
             PlayAnimation(0);
@@ -265,24 +256,33 @@ public class UnitCard : Card
     #endregion
 
     #region INITIALIZATION
-    void InitializeVariables()
+    protected override void InitializeInfo()
     {
-        _info.Init();
+        base.InitializeInfo();
 
-        _power = _info.Power;
-        _health = _info.Health;
-        _cost = _info.Cost;
-        _actions = _info.Actions;
+        _artRenderer.enabled = false;
 
-        _maxHealth = _info.Health;
+        UnitInfo info = _info as UnitInfo;
 
-        _nameText.text = _info.Name;
+        _power = info.Power;
+        _health = info.Health;
+        _cost = info.Cost;
+        _actions = info.Actions;
+
+        _maxHealth = info.Health;
+
+        _nameText.text = _name;
 
         UpdateText();
+
+        Debug.Log($"UnitCard.InitializeInfo: Name={_name}, Power={_power}, Health={_health}, Cost={_cost}, MaxHealth={_maxHealth}, Actions={_actions}");
     }
 
     void EnterPlay()
     {
+        PlayerManager playerManager = PlayerManager.Instance;
+        HandManager handManager = HandManager.Instance;
+
         _isPlayer_1 = _currentTile.GridPosition.x < 3;
         _artRenderer.flipX = !_isPlayer_1;
 
@@ -292,11 +292,17 @@ public class UnitCard : Card
         _shadowRenderer.enabled = true;
         _artRenderer.enabled = true;
 
-        HandManager.Instance.RemoveCardFromHand(gameObject);
-        HandManager.Instance.CenterCardsInHand();
+        int player = _isPlayer_1 ? 1 : 2;
 
-        PlayerManager.Instance.LowerSupply(_cost, _isPlayer_1 ? 1 : 2);
-        PlayerManager.Instance.UpdateSupplyText();
+        playerManager.LowerSupply(_cost, player);
+        playerManager.UpdateSupplyText(player);
+
+        handManager.RemoveCardFromHand(gameObject, player);
+
+        if (_isPlayer_1)
+        {
+            handManager.CenterCardsInHand(1);
+        }
     }
 
     void EnterHand()
@@ -430,22 +436,35 @@ public class UnitCard : Card
 
     bool IsOwnersTurn()
     {
-        if ((_isPlayer_1 && TurnManager.Instance.CurrentTurn == PlayerTurn.Player1)
-            || (!_isPlayer_1 && TurnManager.Instance.CurrentTurn == PlayerTurn.Player2))
+        TurnManager turnManager = TurnManager.Instance;
+
+        if ((_isPlayer_1 && turnManager.CurrentTurn == PlayerTurn.Player1) || (!_isPlayer_1 && turnManager.CurrentTurn == PlayerTurn.Player2))
+        {
             return true;
+        }
         else
+        {
             return false;
+        }
     }
 
     #region PUBLIC VARIABLES
-    public string GetName { get { return _info.Name; } }
+    //public string GetName { get { return _name; } }
     public int GetPower { get { return _power; } }
     public int GetHealth { get { return _health; } }
+    public int GetMaxHealth { get { return _maxHealth; } }
+    public int GetCost { get { return _cost; } }
     public bool IsProvoked { get { return _isProvoked; } }
     public List<ActionInfo> GetActions { get { return _actions; } }
+    public int GetNextAction { get { return _nextAction; } }
     public Tile CurrentTile { get { return _currentTile; } set { _currentTile = value; } }
     public Animator GetAnimator { get { return _artAnimator; } }
     public UnitCard GetProvokingCard { get { return _provokingCard; } }
     public Canvas GetCanvas { get { return _canvas; } }
     #endregion
+
+    public override string ToString()
+    {
+        return $"UnitCard: Name={GetName}, Power={GetPower}, Health={GetHealth}, Cost={GetCost}, MaxHealth={GetMaxHealth}, Actions={(GetActions != null ? string.Join(", ", GetActions) : "null")}, NextAction={GetNextAction}, IsProvoked={IsProvoked}, CurrentTile={(CurrentTile != null ? CurrentTile.ToString() : "null")}";
+    }
 }

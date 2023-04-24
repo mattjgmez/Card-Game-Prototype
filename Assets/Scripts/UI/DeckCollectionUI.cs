@@ -19,13 +19,18 @@ public class DeckCollectionUI : MonoBehaviour
 
     public void InstantiateDeckUIObjects()
     {
-        if (_deckUI == null || _deckContainer == null)
+        if (_deckUI == null)
         {
-            Debug.LogError("Missing reference to either _deckUI or _deckContainer.");
+            Debug.LogError("Missing DeckUI.");
+            return;
+        }
+        if (_deckContainer == null)
+        {
+            Debug.LogError("Missing DeckContainer.");
             return;
         }
 
-        List<(Dictionary<CardInfo, int>, string)> savedDecks = SavedDecks();
+        List<(Dictionary<CardInfo, int>, string)> savedDecks = SaveDeckSystem.DecksInFolder("CustomDecks");
 
         foreach ((Dictionary<CardInfo, int>, string) savedDeck in savedDecks)
         {
@@ -52,49 +57,9 @@ public class DeckCollectionUI : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("Failed to find TMP_Text component in the instantiated _deckUI.");
+                Debug.LogWarning("Failed to find TMP_Text component in the instantiated DeckUI.");
             }
         }
     }
 
-    private List<(Dictionary<CardInfo, int>, string)> SavedDecks()
-    {
-        // Create a list to store the saved decks and their names.
-        List<(Dictionary<CardInfo, int>, string)> savedDecks = new List<(Dictionary<CardInfo, int>, string)>();
-
-        // Get the CustomDecks directory path.
-        string customDecksPath = Application.persistentDataPath + "/CustomDecks";
-
-        // Check if the CustomDecks directory exists.
-        if (Directory.Exists(customDecksPath))
-        {
-            // Get all deck files in the CustomDecks directory.
-            string[] deckFiles = Directory.GetFiles(customDecksPath, "*.json");
-
-            // Iterate through each deck file.
-            foreach (string deckFile in deckFiles)
-            {
-                // Get the deck name from the file name without the extension.
-                string deckName = Path.GetFileNameWithoutExtension(deckFile);
-
-                // Try to load the deck and add it to the list.
-                try
-                {
-                    // Load the deck dictionary using the SaveDeckSystem.
-                    Dictionary<CardInfo, int> deck = SaveDeckSystem.LoadDeckFromFile(deckName);
-
-                    // Add the loaded deck and its name to the savedDecks list.
-                    savedDecks.Add((deck, deckName));
-                }
-                catch (FileNotFoundException)
-                {
-                    // Log an error if the deck file is not found.
-                    Debug.LogError($"Deck file not found: {deckFile}");
-                }
-            }
-        }
-
-        // Return the list of saved decks and their names.
-        return savedDecks;
-    }
 }

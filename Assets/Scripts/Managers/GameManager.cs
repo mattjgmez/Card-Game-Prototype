@@ -4,32 +4,52 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static UnityEngine.Rendering.DebugUI;
 
 public class GameManager : MonoSingleton<GameManager>
 {
-    private (Dictionary<CardInfo, int>, string) _currentDeck = default;
-    private Queue<CardInfo> _cardQueue;
+    private (Dictionary<CardInfo, int>, string) _currentDeck_Player1 = default;
+    private (Dictionary<CardInfo, int>, string) _currentDeck_Player2 = default;
+    private Queue<CardInfo> _cardQueue_Player1;
+    private Queue<CardInfo> _cardQueue_Player2;
 
     public Action<(Dictionary<CardInfo, int>, string)> CurrentDeckChanged;
 
-    public (Dictionary<CardInfo, int>, string) CurrentDeck
+    public (Dictionary<CardInfo, int>, string) CurrentDeck_Player1
     {
         get
         {
-            return _currentDeck;
+            return _currentDeck_Player1;
         }
         set
         {
-            _currentDeck = value;
+            _currentDeck_Player1 = value;
 
-            CurrentDeckChanged?.Invoke(_currentDeck);
+            CurrentDeckChanged?.Invoke(_currentDeck_Player1);
 
             string deckName = value == default ? "NULL" : value.Item2;
-            Debug.Log($"Current Deck set to {deckName}.");
+            //Debug.Log($"Current Deck set to {deckName}.");
 
             if (value != default)
             {
-                _cardQueue = CreateCardQueue(value.Item1);
+                _cardQueue_Player1 = CreateCardQueue(value.Item1);
+            }
+        }
+    }
+
+    public (Dictionary<CardInfo, int>, string) CurrentDeck_Player2
+    {
+        get
+        {
+            return _currentDeck_Player2;
+        }
+        set
+        {
+            _currentDeck_Player2 = value;
+
+            if (value != default)
+            {
+                _cardQueue_Player2 = CreateCardQueue(value.Item1);
             }
         }
     }
@@ -41,10 +61,11 @@ public class GameManager : MonoSingleton<GameManager>
 
     public void StartGame()
     {
-        if (_currentDeck != default)
+        if (_currentDeck_Player1 != default)
         {
             ChangeScene("Gameplay");
-            ShuffleCardQueue();
+            ShuffleCardQueue(1);
+            ShuffleCardQueue(2);
         }
     }
 
@@ -79,9 +100,17 @@ public class GameManager : MonoSingleton<GameManager>
     /// <remarks>
     /// This method shuffles the CardInfo queue in place by converting it to a list, shuffling the list using the Fisher-Yates shuffle algorithm, and then re-enqueuing the shuffled cards back into the original queue.
     /// </remarks>
-    public void ShuffleCardQueue()
+    /// <param name="player">The player's deck to shuffle.</param>
+    public void ShuffleCardQueue(int player)
     {
-        List<CardInfo> cardList = _cardQueue.ToList();
+        Queue<CardInfo> cardQueue = player == 1 ? _cardQueue_Player1 : _cardQueue_Player2;
+
+        if (cardQueue == default)
+        {
+            cardQueue = CreateCardQueue(SelectAIDeckFromFolder().Item1);
+        }
+
+        List<CardInfo> cardList = cardQueue.ToList();
         System.Random random = new System.Random();
 
         for (int i = cardList.Count - 1; i > 0; i--)
@@ -92,16 +121,32 @@ public class GameManager : MonoSingleton<GameManager>
             cardList[randomIndex] = temp;
         }
 
-        _cardQueue.Clear();
+        cardQueue.Clear();
 
         foreach (CardInfo card in cardList)
         {
-            _cardQueue.Enqueue(card);
+            cardQueue.Enqueue(card);
         }
     }
 
-    public Queue<CardInfo> GetCardQueue()
+    public Queue<CardInfo> GetCardQueue(int player)
     {
-        return _cardQueue;
+        return player == 1 ? _cardQueue_Player1 : _cardQueue_Player2;
+    }
+
+    private (Dictionary<CardInfo, int>, string) SelectAIDeckFromFolder()
+    {
+        List<(Dictionary<CardInfo, int>, string)> deckList = SaveDeckSystem.DecksInFolder("AIDecks");
+
+        if (deckList.Count == 0)
+        {
+            Debug.LogError("No decks found in 'AIDecks' folder.");
+            return default;
+        }
+
+        System.Random random = new System.Random();
+        int randomIndex = random.Next(deckList.Count);
+
+        return deckList[randomIndex];
     }
 }

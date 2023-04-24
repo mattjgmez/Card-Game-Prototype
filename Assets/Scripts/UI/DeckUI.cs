@@ -9,7 +9,7 @@ public class DeckUI : Interactable
 
     protected override void OnLeftClick()
     {
-        GameManager.Instance.CurrentDeck = Deck;
+        GameManager.Instance.CurrentDeck_Player1 = Deck;
 
         if (!InCardCollection)
             return;

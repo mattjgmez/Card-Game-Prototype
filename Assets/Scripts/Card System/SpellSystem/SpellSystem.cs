@@ -12,27 +12,28 @@ public static class SpellSystem
         {
             if (spellInfo.HasTag(SpellTags.Damage))
             {
-                PerformDamage(spellInfo, targetCard);
+                PerformDamage(spell, targetCard);
             }
 
             if (spellInfo.HasTag(SpellTags.Heal))
             {
-                PerformHeal(spellInfo, targetCard);
+                PerformHeal(spell, targetCard);
             }
         }
     }
 
-    public static void PerformDamage(SpellInfo spellInfo, UnitCard targetCard)
+    public static void PerformDamage(SpellCard spell, UnitCard targetCard)
     {
-        int damageDealt = spellInfo.Power;
-        int targetHealth = targetCard.GetHealth;
+        SpellInfo spellInfo = spell.SpellInfo;
+
+        int damageDealt = spell.Power;
 
         targetCard.TakeDamage(damageDealt, spellInfo.HasTag(SpellTags.DeathTouch));
     }
 
-    private static void PerformHeal(SpellInfo spellInfo, UnitCard targetCard)
+    private static void PerformHeal(SpellCard spell, UnitCard targetCard)
     {
-        targetCard.Heal(spellInfo.Power);
+        targetCard.Heal(spell.Power);
     }
 
     public static List<Tile> GetTargetTiles(Tile cursorTarget, Vector2Int areaOfEffect, bool isPlayer1, List<bool> validTargets)
@@ -48,9 +49,9 @@ public static class SpellSystem
         int extraY = areaOfEffect.y % 2 == 0 ? 1 : 0;
 
         int minX = Mathf.Max(0, cursorTarget.GridPosition.x - offsetX);
-        int maxX = Mathf.Min(GridManager.Instance.GridWidth - 1, cursorTarget.GridPosition.x + offsetX + extraX);
+        int maxX = Mathf.Min(GridManager.GridWidth - 1, cursorTarget.GridPosition.x + offsetX + extraX);
         int minY = Mathf.Max(0, cursorTarget.GridPosition.y - offsetY);
-        int maxY = Mathf.Min(GridManager.Instance.GridHeight - 1, cursorTarget.GridPosition.y + offsetY + extraY);
+        int maxY = Mathf.Min(GridManager.GridHeight - 1, cursorTarget.GridPosition.y + offsetY + extraY);
 
         for (int x = minX; x <= maxX; x++)
         {
@@ -78,9 +79,9 @@ public static class SpellSystem
             }
         }
 
-        for (int x = 0; x < GridManager.Instance.GridWidth; x++)
+        for (int x = 0; x < GridManager.GridWidth; x++)
         {
-            for (int y = 0; y < GridManager.Instance.GridHeight; y++)
+            for (int y = 0; y < GridManager.GridHeight; y++)
             {
                 Tile currentTile = GridManager.Instance.Grid[x, y];
                 currentTile.SetTileActive(validTiles.Contains(currentTile));
