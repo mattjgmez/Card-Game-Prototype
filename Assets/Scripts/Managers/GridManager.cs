@@ -81,8 +81,9 @@ public class GridManager : MonoSingleton<GridManager>
             {
                 tile.SetTileActive(false);
             }
+
             // If the tile is not in playerTiles or has an active card, toggle the collider based on the value parameter
-            else if (!_playerTiles.Contains(tile) || tile.ActiveCard)
+            if (!_playerTiles.Contains(tile) || tile.ActiveCard)
             {
                 tile.GetComponent<Collider>().enabled = !value;
             }

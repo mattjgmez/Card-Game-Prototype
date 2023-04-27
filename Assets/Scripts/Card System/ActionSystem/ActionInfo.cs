@@ -10,7 +10,7 @@ public class ActionInfo : ScriptableObject
     [SerializeField] string _description;
     [SerializeField] Sprite _sprite;
     [SerializeField] ActionRange _range;
-    [SerializeField] List<ActionKeywords> _keywords;
+    [SerializeField] List<ActionKeyword> _keywords;
     [SerializeField, Header("Order of bools: Enemies, Allies, Self")] List<bool> _validTargets = new List<bool>
     {
         { false },
@@ -18,7 +18,7 @@ public class ActionInfo : ScriptableObject
         { false },
     };
 
-    public bool HasKeyword(ActionKeywords keyword)
+    public bool HasKeyword(ActionKeyword keyword)
     {
         return _keywords.Contains(keyword);
     }
@@ -41,7 +41,7 @@ public class ActionInfo : ScriptableObject
         set { _sprite = value; }
     }
 
-    public List<ActionKeywords> Keywords
+    public List<ActionKeyword> Keywords
     {
         get { return _keywords; }
         set { _keywords = value; }

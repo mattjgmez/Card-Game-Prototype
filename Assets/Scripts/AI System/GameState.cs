@@ -479,7 +479,7 @@ public class GameState
         return aiControl - opponentControl;
     }
 
-    public float GetControlValueForAction(List<ActionKeywords> keywords, ActionRange range, Vector2Int position)
+    public float GetControlValueForAction(List<ActionKeyword> keywords, ActionRange range, Vector2Int position)
     {
         float controlValue = 0;
 
@@ -498,35 +498,35 @@ public class GameState
         }
 
         // Adds value based on action keywords
-        if (keywords.Contains(ActionKeywords.Cleave))
+        if (keywords.Contains(ActionKeyword.Cleave))
         {
             controlValue += CleaveWeight;
         }
-        if (keywords.Contains(ActionKeywords.Burst))
+        if (keywords.Contains(ActionKeyword.Burst))
         {
             controlValue += BurstWeight;
         }
-        if (keywords.Contains(ActionKeywords.Nova))
+        if (keywords.Contains(ActionKeyword.Nova))
         {
             controlValue += NovaWeight;
         }
-        if (keywords.Contains(ActionKeywords.Drain))
+        if (keywords.Contains(ActionKeyword.Drain))
         {
             controlValue += DrainWeight;
         }
-        if (keywords.Contains(ActionKeywords.DrawCard))
+        if (keywords.Contains(ActionKeyword.DrawCard))
         {
             controlValue += DrawCardWeight;
         }
-        if (keywords.Contains(ActionKeywords.Provoke))
+        if (keywords.Contains(ActionKeyword.Provoke))
         {
             controlValue += ProvokeWeight;
         }
-        if (keywords.Contains(ActionKeywords.DeathTouch))
+        if (keywords.Contains(ActionKeyword.DeathTouch))
         {
             controlValue += DeathTouchWeight;
         }
-        if (keywords.Contains(ActionKeywords.Overkill))
+        if (keywords.Contains(ActionKeyword.Overkill))
         {
             controlValue += OverkillWeight;
         }

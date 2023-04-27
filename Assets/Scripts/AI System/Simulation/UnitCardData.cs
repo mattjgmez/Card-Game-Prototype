@@ -43,12 +43,12 @@ public class UnitCardData : CardData
 
         // Assign properties to temporary variables
         string name = unitCard.GetName;
-        int power = unitCard.GetPower;
-        int health = unitCard.GetHealth;
-        int cost = unitCard.GetCost;
-        int maxHealth = unitCard.GetMaxHealth;
-        List<ActionInfo> actions = unitCard.GetActions;
-        int nextAction = unitCard.GetNextAction;
+        int power = unitCard.Power;
+        int health = unitCard.Health;
+        int cost = unitCard.Cost;
+        int maxHealth = unitCard.MaxHealth;
+        List<ActionInfo> actions = unitCard.Actions;
+        int nextAction = actions.IndexOf(unitCard.NextAction);
         bool isProvoked = unitCard.IsProvoked;
         TileData currentTile = unitCard.CurrentTile != null ? TileData.FromTile(unitCard.CurrentTile) : null;
 

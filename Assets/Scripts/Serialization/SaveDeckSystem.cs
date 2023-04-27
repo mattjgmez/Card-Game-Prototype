@@ -24,7 +24,10 @@ public static class SaveDeckSystem
     /// <returns>The complete file path for the specified deck file name within the "CustomDecks" directory.</returns>
     public static string DeckFilePath(string fileName)
     {
-        string customDecksPath = Application.persistentDataPath + "/CustomDecks";
+        string customDecksPath = $"{Application.dataPath}/Resources/Decks/CustomDecks";
+
+        // +++++++TEMPORARY CHANGE+++++++
+        //string customDecksPath = Application.persistentDataPath + "/CustomDecks";
 
         if (!Directory.Exists(customDecksPath))
         {
@@ -162,7 +165,10 @@ public static class SaveDeckSystem
         List<(Dictionary<CardInfo, int>, string)> savedDecks = new List<(Dictionary<CardInfo, int>, string)>();
 
         // Get the CustomDecks directory path.
-        string customDecksPath = Application.persistentDataPath + $"/{folderName}";
+        string customDecksPath = $"{Application.dataPath}/Resources/Decks/{folderName}";
+
+        // +++++++TEMPORARY CHANGE+++++++
+        //string customDecksPath = Application.persistentDataPath + $"/{folderName}";
 
         // Check if the CustomDecks directory exists.
         if (Directory.Exists(customDecksPath))
@@ -180,7 +186,7 @@ public static class SaveDeckSystem
                 try
                 {
                     // Load the deck dictionary using the SaveDeckSystem.
-                    Dictionary<CardInfo, int> deck = SaveDeckSystem.LoadDeckFromFile(deckName);
+                    Dictionary<CardInfo, int> deck = LoadDeckFromFile(deckName);
 
                     // Add the loaded deck and its name to the savedDecks list.
                     savedDecks.Add((deck, deckName));

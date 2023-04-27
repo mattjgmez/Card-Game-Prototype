@@ -10,7 +10,6 @@ public class MenuManager : MonoBehaviour
         MainMenu = 0,
         DeckSelection = 2,
         Collection = 1
-        // Add new menu indices here as needed
     }
 
     public void NewGame()

@@ -22,7 +22,9 @@ public class CardCollectionManager : MonoSingleton<CardCollectionManager>
     [SerializeField] private TMP_Text _deckLimitText;
     [SerializeField] private ScrollRect _scrollRect;
     [SerializeField] private DeckCollectionUI _deckCollectionUI;
+    [SerializeField] private GameObject _cardInfoUIPrefab;
 
+    private CardInfoUI _cardInfoUI;
     private Dictionary<CardInfo, int> _currentDeck;
     private Dictionary<CardInfo, CardInDeckUI> _cardInDeckUIs = new Dictionary<CardInfo, CardInDeckUI>();
 
@@ -72,7 +74,8 @@ public class CardCollectionManager : MonoSingleton<CardCollectionManager>
         if (cardUI != null)
         {
             cardUI.SetCardInfo(cardInfo);
-            cardUI.OnCardClicked += AddCardToDeck;
+            cardUI.CardUILeftClicked += AddCardToDeck;
+            cardUI.CardUIRightClicked += ToggleCardInfoUI;
         }
     }
 
@@ -118,6 +121,18 @@ public class CardCollectionManager : MonoSingleton<CardCollectionManager>
             {
                 AddOrUpdateCardInDeckUI(cardInfo);
             }
+        }
+    }
+
+    public void ToggleCardInfoUI(CardInfo info)
+    {
+        if (CardInfoUI.Canvas.enabled)
+        {
+            CardInfoUI.DisableInfoUI();
+        }
+        else
+        {
+            CardInfoUI.EnableInfoUI(info);
         }
     }
 
@@ -245,6 +260,23 @@ public class CardCollectionManager : MonoSingleton<CardCollectionManager>
             {
                 return "New Deck";
             }
+        }
+    }
+
+    public CardInfoUI CardInfoUI
+    {
+        get
+        {
+            if (_cardInfoUI == null)
+            {
+                _cardInfoUI = Instantiate(_cardInfoUIPrefab).GetComponent<CardInfoUI>();
+            }
+
+            return _cardInfoUI;
+        }
+        set
+        {
+            _cardInfoUI = value;
         }
     }
 }

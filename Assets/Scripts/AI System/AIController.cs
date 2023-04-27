@@ -14,7 +14,7 @@ public class AIController : MonoBehaviour
     {
         _ai = new MCTS_AI(_maxIterations);
 
-        GameManager.Instance.CurrentDeck_Player2 = SelectDeckFromFolder();
+        //GameManager.Instance.CurrentDeck_Player2 = SelectDeckFromFolder();
     }
 
     private void OnEnable()
@@ -72,7 +72,7 @@ public class AIController : MonoBehaviour
 
             // Get the best move for the AI
             IGameAction bestAction = _ai.GetBestMove(currentState);
-            Debug.Log($"AIController.AITurn: The best action is {bestAction.ToString()}.");
+            Debug.Log($"AIController.AITurn: The best action is {bestAction}.");
 
             // Execute the best move
             if (bestAction is PlayUnitCardAction || bestAction is PlaySpellCardAction)

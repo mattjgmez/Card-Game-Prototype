@@ -17,17 +17,17 @@ public static class ActionSystem_Simulated
 
         foreach (UnitCardData targetCard in targetCards)
         {
-            if (action.HasKeyword(ActionKeywords.Heal))
+            if (action.HasKeyword(ActionKeyword.Heal))
             {
                 PerformHeal(card, targetCard);
             }
 
-            if (action.HasKeyword(ActionKeywords.Damage))
+            if (action.HasKeyword(ActionKeyword.Damage))
             {
                 int damageDealt = PerformDamage(card, targetCard, action, ref targetSlain, gameState);
             }
 
-            if (action.HasKeyword(ActionKeywords.Provoke))
+            if (action.HasKeyword(ActionKeyword.Provoke))
             {
                 PerformProvoke(card, targetCard);
             }
@@ -44,9 +44,9 @@ public static class ActionSystem_Simulated
         int damageDealt = card.Power;
         int targetHealth = targetCard.Health;
 
-        targetCard.TakeDamage(damageDealt, action.HasKeyword(ActionKeywords.DeathTouch), gameState);
+        targetCard.TakeDamage(damageDealt, action.HasKeyword(ActionKeyword.DeathTouch), gameState);
 
-        if (action.HasKeyword(ActionKeywords.Overkill) && targetHealth <= damageDealt)
+        if (action.HasKeyword(ActionKeyword.Overkill) && targetHealth <= damageDealt)
         {
             targetSlain = true;
 
@@ -64,13 +64,13 @@ public static class ActionSystem_Simulated
 
                     if (overkillTarget != null)
                     {
-                        overkillTarget.TakeDamage(overkillDamage, action.HasKeyword(ActionKeywords.DeathTouch), gameState);
+                        overkillTarget.TakeDamage(overkillDamage, action.HasKeyword(ActionKeyword.DeathTouch), gameState);
                     }
                 }
             }
         }
 
-        if (action.HasKeyword(ActionKeywords.Drain))
+        if (action.HasKeyword(ActionKeyword.Drain))
         {
             card.Heal(damageDealt);
         }
@@ -120,7 +120,7 @@ public static class ActionSystem_Simulated
             return targetCards;
         }
 
-        if (action.HasKeyword(ActionKeywords.Nova))
+        if (action.HasKeyword(ActionKeyword.Nova))
         {
             AddNovaTiles(targetCards, validTiles);
         }
@@ -128,12 +128,12 @@ public static class ActionSystem_Simulated
         {
             targetCards.Add(targetTile.ActiveCard);
 
-            if (action.HasKeyword(ActionKeywords.Cleave) && targetTile != null)
+            if (action.HasKeyword(ActionKeyword.Cleave) && targetTile != null)
             {
                 AddCleaveTiles(card, targetTile, targetCards, gameState);
             }
 
-            if (action.HasKeyword(ActionKeywords.Burst) && targetTile != null)
+            if (action.HasKeyword(ActionKeyword.Burst) && targetTile != null)
             {
                 AddBurstTiles(card, targetTile, targetCards, gameState);
             }
@@ -247,24 +247,7 @@ public static class ActionSystem_Simulated
             Debug.LogError($"ValidTiles: GridPosition is null.");
         }
 
-
-        Vector2Int position = card.CurrentTile.GridPosition;
-
-        switch (action.Range)
-        {
-            case ActionRange.Melee:
-                validTiles = ActionRanges_Simulated.Melee(gameState, position, card.IsPlayer1, action.ValidTargets);
-                break;
-            case ActionRange.Ranged:
-                validTiles = ActionRanges_Simulated.Ranged(gameState, position, card.IsPlayer1, action.ValidTargets);
-                break;
-            case ActionRange.Reach:
-                validTiles = ActionRanges_Simulated.Reach(gameState, position, card.IsPlayer1, action.ValidTargets);
-                break;
-            case ActionRange.Global:
-                validTiles = ActionRanges_Simulated.Global(gameState, position, card.IsPlayer1, action.ValidTargets);
-                break;
-        }
+        ActionRanges_Simulated.GetValidTargets(gameState, card, action.Range, action.ValidTargets);
 
         TileData provokingCardTile = gameState.GetTileDataByCard(card.ProvokingCard);
         if (card.IsProvoked && validTiles.Contains(provokingCardTile))

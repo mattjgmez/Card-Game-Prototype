@@ -20,21 +20,19 @@ public static class ActionSystem
     {
         DebugList(card, action, targetCards);
 
-        bool targetSlain = false;
-
         foreach (UnitCard targetCard in targetCards)
         {
-            if (action.HasKeyword(ActionKeywords.Heal))
+            if (action.HasKeyword(ActionKeyword.Heal))
             {
                 PerformHeal(card, targetCard);
             }
 
-            if (action.HasKeyword(ActionKeywords.Damage))
+            if (action.HasKeyword(ActionKeyword.Damage))
             {
-                int damageDealt = PerformDamage(card, targetCard, action, ref targetSlain);
+                PerformDamage(card, targetCard, action);
             }
 
-            if (action.HasKeyword(ActionKeywords.Provoke))
+            if (action.HasKeyword(ActionKeyword.Provoke))
             {
                 PerformProvoke(card, targetCard);
             }
@@ -94,7 +92,7 @@ public static class ActionSystem
     /// <param name="targetCard">The target card to heal.</param>
     private static void PerformHeal(UnitCard card, UnitCard targetCard)
     {
-        targetCard.Heal(card.GetPower);
+        targetCard.Heal(card.Power);
     }
 
     /// <summary>
@@ -103,35 +101,38 @@ public static class ActionSystem
     /// <param name="card">The card using the action.</param>
     /// <param name="targetCard">The target card to damage.</param>
     /// <param name="action">The action being performed.</param>
-    /// <param name="targetSlain">Whether the target has been slain.</param>
     /// <returns>The amount of damage dealt.</returns>
-    private static int PerformDamage(UnitCard card, UnitCard targetCard, ActionInfo action, ref bool targetSlain)
+    private static int PerformDamage(UnitCard card, UnitCard targetCard, ActionInfo action)
     {
-        int damageDealt = card.GetPower;
-        int targetHealth = targetCard.GetHealth;
+        int damageDealt = card.Power;
+        int targetHealth = targetCard.Health;
 
-        targetCard.TakeDamage(damageDealt, action.HasKeyword(ActionKeywords.DeathTouch));
+        targetCard.TakeDamage(damageDealt, action.HasKeyword(ActionKeyword.DeathTouch));
 
-        if (action.HasKeyword(ActionKeywords.Overkill) && targetHealth <= damageDealt)
+        bool targetSlain = targetHealth <= damageDealt;
+
+        // Handles Overkill Logic
+        if (action.HasKeyword(ActionKeyword.Overkill) && targetSlain)
         {
-            targetSlain = true;
+            int overkillDamage = damageDealt - targetHealth;
 
-            if (targetHealth < damageDealt)
+            if (overkillDamage > 0)
             {
-                int overkillDamage = damageDealt - targetHealth;
-
+                int overkillDirection = card.IsPlayer1 ? 1 : -1;
                 Tile targetTile = targetCard.CurrentTile;
-                Tile overkillTargetTile = GridManager.Instance.Grid[targetTile.GridPosition.x + 1, targetTile.GridPosition.y];
+
+                // Gets the appropriate tile to deal overkill damage to
+                Tile overkillTargetTile = GridManager.Instance.Grid[targetTile.GridPosition.x + overkillDirection, targetTile.GridPosition.y];
                 UnitCard overkillTarget = overkillTargetTile.ActiveCard;
 
-                if(overkillTarget != null)
+                if (overkillTarget != null)
                 {
-                    overkillTarget.TakeDamage(overkillDamage, action.HasKeyword(ActionKeywords.DeathTouch));
+                    overkillTarget.TakeDamage(overkillDamage, action.HasKeyword(ActionKeyword.DeathTouch));
                 }
             }
         }
 
-        if (action.HasKeyword(ActionKeywords.Drain))
+        if (action.HasKeyword(ActionKeyword.Drain))
         {
             card.Heal(damageDealt);
         }
@@ -176,7 +177,7 @@ public static class ActionSystem
             return targetCards;
         }
 
-        if (action.HasKeyword(ActionKeywords.Nova))
+        if (action.HasKeyword(ActionKeyword.Nova))
         {
             AddNovaTiles(targetCards, validTiles);
         }
@@ -184,12 +185,12 @@ public static class ActionSystem
         {
             targetCards.Add(targetTile.ActiveCard);
 
-            if (action.HasKeyword(ActionKeywords.Cleave) && targetTile != null)
+            if (action.HasKeyword(ActionKeyword.Cleave) && targetTile != null)
             {
                 AddCleaveTiles(card, targetTile, targetCards);
             }
 
-            if (action.HasKeyword(ActionKeywords.Burst) && targetTile != null)
+            if (action.HasKeyword(ActionKeyword.Burst) && targetTile != null)
             {
                 AddBurstTiles(card, targetTile, targetCards);
             }
@@ -204,7 +205,7 @@ public static class ActionSystem
     /// <param name="card">The card using the action.</param>
     /// <param name="targetTile">The hit tile from the raycast.</param>
     /// <param name="targetCards">The list of cards to add on to.</param>
-    private static void AddCleaveTiles(UnitCard card, Tile targetTile, List<UnitCard> targetCards)
+    public static void AddCleaveTiles(UnitCard card, Tile targetTile, List<UnitCard> targetCards)
     {
         int targetX = targetTile.ActiveCard.CurrentTile.GridPosition.x;
         int cardY = card.CurrentTile.GridPosition.y;
@@ -234,7 +235,7 @@ public static class ActionSystem
     /// <param name="card">The card using the action.</param>
     /// <param name="targetTile">The hit tile from the raycast.</param>
     /// <param name="targetCards">The list of cards to add on to.</param>
-    private static void AddBurstTiles(UnitCard card, Tile targetTile, List<UnitCard> targetCards)
+    public static void AddBurstTiles(UnitCard card, Tile targetTile, List<UnitCard> targetCards)
     {
         int y = targetTile.GridPosition.y;
         int direction = card.IsPlayer1 ? 1 : -1;
@@ -263,7 +264,7 @@ public static class ActionSystem
     /// </summary>
     /// <param name="targetCards">The list of cards to add on to.</param>
     /// <param name="validTiles">The list of valid tiles to add.</param>
-    private static void AddNovaTiles(List<UnitCard> targetCards, List<Tile> validTiles)
+    public static void AddNovaTiles(List<UnitCard> targetCards, List<Tile> validTiles)
     {
         foreach (Tile tile in validTiles)
         {
@@ -284,28 +285,29 @@ public static class ActionSystem
     /// <returns>A list of valid tiles for the given action.</returns>
     public static List<Tile> ValidTiles(UnitCard card, ActionInfo action)
     {
-        List<Tile> validTiles = new List<Tile>();
+        List<Tile> validTiles = ActionRanges.GetValidTargets(card, action.Range, action.ValidTargets);
+        List<Tile> tilesToRemove = new List<Tile>();
 
-        switch (action.Range)
+        foreach (Tile tile in validTiles)
         {
-            case ActionRange.Melee:
-                validTiles = ActionRanges.Melee(card.CurrentTile.GridPosition, card.IsPlayer1, action.ValidTargets);
-                break;
-            case ActionRange.Ranged:
-                validTiles = ActionRanges.Ranged(card.CurrentTile.GridPosition, card.IsPlayer1, action.ValidTargets);
-                break;
-            case ActionRange.Reach:
-                validTiles = ActionRanges.Reach(card.CurrentTile.GridPosition, card.IsPlayer1, action.ValidTargets);
-                break;
-            case ActionRange.Global:
-                validTiles = ActionRanges.Global(card.CurrentTile.GridPosition, card.IsPlayer1, action.ValidTargets);
-                break;
+            if (action.HasKeyword(ActionKeyword.Heal) && tile.HasCard)
+            {
+                if (tile.ActiveCard.Health >= card.MaxHealth)
+                {
+                    tilesToRemove.Add(tile);
+                }
+            }
         }
 
-        if (card.IsProvoked && validTiles.Contains(card.GetProvokingCard.CurrentTile))
+        foreach (Tile tile in tilesToRemove)
+        {
+            validTiles.Remove(tile);
+        }
+
+        if (card.IsProvoked && validTiles.Contains(card.ProvokingCard.CurrentTile))
         {
             validTiles.Clear();
-            validTiles.Add(card.GetProvokingCard.CurrentTile);
+            validTiles.Add(card.ProvokingCard.CurrentTile);
         }
 
         return validTiles;

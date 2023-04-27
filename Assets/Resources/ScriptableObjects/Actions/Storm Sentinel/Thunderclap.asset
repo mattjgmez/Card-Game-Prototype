@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44d12ee8257b27340b9c6075a6c1ed8f, type: 3}
   m_Name: Thunderclap
   m_EditorClassIdentifier: 
-  _cost: 7
   _name: Thunderclap
-  _description: Deal damage to all units in reach.
+  _description: Hits both enemies and allies
   _sprite: {fileID: 21300000, guid: faf2d3fb57c16e44eba1887c849f5cbf, type: 3}
-  _keywords: 0100000005000000
   _range: 2
+  _keywords: 0100000005000000
   _validTargets: 010100

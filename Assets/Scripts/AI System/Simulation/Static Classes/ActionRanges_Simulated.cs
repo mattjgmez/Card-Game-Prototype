@@ -4,111 +4,151 @@ using UnityEngine;
 
 public static class ActionRanges_Simulated
 {
-    public static List<TileData> GetValidTiles(GameState gameState, Vector2Int currentPosition, bool isPlayer1, List<bool> validTargets, ActionRange actionRange)
+    public static List<int> YOffsets = new List<int>() { 0, -1, 1 };
+
+    public static List<TileData> GetValidTargets(GameState gameState, UnitCardData unit, ActionRange range, List<bool> validTargets)
     {
-        List<TileData> validTiles = new List<TileData>();
-        List<TileData> sameRowTiles = new List<TileData>();
+        List<TileData> targets = new List<TileData>();
+        bool isPlayer1 = unit.IsPlayer1;
+
+        int startX = isPlayer1 ? 2 : 3;
+        int direction = isPlayer1 ? 1 : -1;
+
+        switch (range)
+        {
+            case ActionRange.Melee:
+                targets = GetMeleeTargets(gameState, unit, startX, direction, validTargets);
+                break;
+            case ActionRange.Ranged:
+                targets = GetRangedTargets(gameState, unit, startX, direction, validTargets);
+                break;
+            case ActionRange.Reach:
+                targets = GetReachTargets(gameState, unit, startX, direction, validTargets);
+                break;
+            case ActionRange.Global:
+                targets = GetGlobalTargets(gameState, unit, startX, direction, validTargets);
+                break;
+        }
+
+        return targets;
+    }
+
+    private static List<TileData> GetMeleeTargets(GameState gameState, UnitCardData unit, int startX, int direction, List<bool> validTargets)
+    {
+        List<TileData> targets = new List<TileData>();
+        Vector2Int currentPosition = unit.CurrentTile.GridPosition;
+
+        for (int offsetX = 0; offsetX <= 1; offsetX++)
+        {
+            foreach (int offsetY in YOffsets)
+            {
+                int newX = currentPosition.x + (offsetX * direction);
+                int newY = currentPosition.y + offsetY;
+
+                if (IsValidTile(newX, newY) && IsValidTarget(gameState, unit, newX, newY, validTargets))
+                {
+                    targets.Add(gameState.Grid[newX, newY]);
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    private static List<TileData> GetRangedTargets(GameState gameState, UnitCardData unit, int startX, int direction, List<bool> validTargets)
+    {
+        List<TileData> targets = new List<TileData>();
+        Vector2Int currentPosition = unit.CurrentTile.GridPosition;
+
+        for (int offsetX = 0; offsetX < 3; offsetX++)
+        {
+            foreach (int offsetY in YOffsets)
+            {
+                int newX = startX + (offsetX * direction);
+                int newY = currentPosition.y + offsetY;
+
+                if (IsValidTile(newX, newY) && IsValidTarget(gameState, unit, newX, newY, validTargets))
+                {
+                    targets.Add(gameState.Grid[newX, newY]);
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    private static List<TileData> GetReachTargets(GameState gameState, UnitCardData unit, int startX, int direction, List<bool> validTargets)
+    {
+        List<TileData> targets = new List<TileData>();
+        Vector2Int currentPosition = unit.CurrentTile.GridPosition;
+
+        for (int offsetX = 0; offsetX <= 2; offsetX++)
+        {
+            foreach (int offsetY in YOffsets)
+            {
+                int newX = startX + (offsetX * direction);
+                int newY = currentPosition.y + offsetY;
+
+                if (IsValidTile(newX, newY) && IsValidTarget(gameState, unit, newX, newY, validTargets))
+                {
+                    targets.Add(gameState.Grid[newX, newY]);
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    private static List<TileData> GetGlobalTargets(GameState gameState, UnitCardData unit, int startX, int direction, List<bool> validTargets)
+    {
+        List<TileData> targets = new List<TileData>();
+        Vector2Int currentPosition = unit.CurrentTile.GridPosition;
+
+        for (int offsetX = 0; offsetX < 6; offsetX++)
+        {
+            foreach (int offsetY in YOffsets)
+            {
+                int newX = startX + (offsetX * direction);
+                int newY = currentPosition.y + offsetY;
+
+                if (IsValidTile(newX, newY) && IsValidTarget(gameState, unit, newX, newY, validTargets))
+                {
+                    targets.Add(gameState.Grid[newX, newY]);
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    private static bool IsValidTile(int x, int y)
+    {
+        return x >= 0 && x < 6 && y >= 0 && y < 5;
+    }
+
+    private static bool IsValidTarget(GameState gameState, UnitCardData unit, int x, int y, List<bool> validTargets)
+    {
+        TileData targetTile = gameState.Grid[x, y];
+
+        if (targetTile.ActiveCard == null) return false;
 
         bool targetsEnemies = validTargets[0];
         bool targetsAllies = validTargets[1];
         bool targetsSelf = validTargets[2];
 
-        int xMin = 0;
-        int xMax = 5;
-
-        if (actionRange != ActionRange.Global)
+        if (targetsSelf && unit == targetTile.ActiveCard)
         {
-            xMin = isPlayer1 ? Mathf.Max(currentPosition.x - 1, 0) : Mathf.Max(currentPosition.x - 2, 0);
-            xMax = isPlayer1 ? Mathf.Min(currentPosition.x + 2, 5) : Mathf.Min(currentPosition.x + 1, 5);
+            return true;
         }
-
-        for (int x = xMin; x <= xMax; x++)
+        else if (targetsAllies && unit.IsPlayer1 == targetTile.ActiveCard.IsPlayer1)
         {
-            for (int yOffset = -1; yOffset <= 1; yOffset++)
-            {
-                int y = currentPosition.y + yOffset;
-
-                if (y >= 0 && y <= 4)
-                {
-                    TileData tile = gameState.Grid[x, y];
-                    bool tileValid = false;
-
-                    if (tile.GridPosition == currentPosition && targetsSelf)
-                    {
-                        tileValid = true;
-                    }
-                    else if (tile.ActiveCard != null && tile.ActiveCard.IsPlayer1 != isPlayer1 && targetsEnemies)
-                    {
-                        tileValid = true;
-                    }
-                    else if (tile.ActiveCard != null && tile.ActiveCard.IsPlayer1 == isPlayer1 && targetsAllies && tile.GridPosition != currentPosition)
-                    {
-                        tileValid = true;
-                    }
-
-                    if (tileValid)
-                    {
-                        if (actionRange == ActionRange.Melee || actionRange == ActionRange.Reach || actionRange == ActionRange.Global)
-                        {
-                            if (yOffset == 0)
-                            {
-                                sameRowTiles.Add(tile);
-                            }
-                            else
-                            {
-                                validTiles.Add(tile);
-                            }
-                        }
-                        else if (actionRange == ActionRange.Ranged && IsValidRangedTile(currentPosition, isPlayer1, tile))
-                        {
-                            if (yOffset == 0)
-                            {
-                                sameRowTiles.Add(tile);
-                            }
-                            else
-                            {
-                                validTiles.Add(tile);
-                            }
-                        }
-                    }
-                }
-            }
+            return true;
         }
-
-        validTiles.InsertRange(0, sameRowTiles);
-        return validTiles;
-    }
-
-    private static bool IsValidRangedTile(Vector2Int currentPosition, bool isPlayer1, TileData tile)
-    {
-        int xDistance = Mathf.Abs(currentPosition.x - tile.GridPosition.x);
-        int yDistance = Mathf.Abs(currentPosition.y - tile.GridPosition.y);
-
-        if (xDistance <= 2 && yDistance <= 1)
+        else if (targetsEnemies && unit.IsPlayer1 != targetTile.ActiveCard.IsPlayer1)
         {
             return true;
         }
 
         return false;
-    }
-
-    public static List<TileData> Melee(GameState gameState, Vector2Int currentPosition, bool isPlayer1, List<bool> validTargets)
-    {
-        return GetValidTiles(gameState, currentPosition, isPlayer1, validTargets, ActionRange.Melee);
-    }
-
-    public static List<TileData> Reach(GameState gameState, Vector2Int currentPosition, bool isPlayer1, List<bool> validTargets)
-    {
-        return GetValidTiles(gameState, currentPosition, isPlayer1, validTargets, ActionRange.Reach);
-    }
-
-    public static List<TileData> Ranged(GameState gameState, Vector2Int currentPosition, bool isPlayer1, List<bool> validTargets)
-    {
-        return GetValidTiles(gameState, currentPosition, isPlayer1, validTargets, ActionRange.Ranged);
-    }
-
-    public static List<TileData> Global(GameState gameState, Vector2Int currentPosition, bool isPlayer1, List<bool> validTargets)
-    {
-        return GetValidTiles(gameState, currentPosition, isPlayer1, validTargets, ActionRange.Global);
     }
 }

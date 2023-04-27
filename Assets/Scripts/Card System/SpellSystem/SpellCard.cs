@@ -126,7 +126,7 @@ public class SpellCard : Card
     {
         base.InitializeInfo();
 
-        SpellInfo info = _info as SpellInfo;
+        SpellInfo info = CardInfo as SpellInfo;
 
         _power = info.Power;
         _areaOfEffect = info.AreaOfEffect;
@@ -144,7 +144,7 @@ public class SpellCard : Card
     }
     #endregion
 
-    public SpellInfo SpellInfo { get { return _info as SpellInfo; } }
+    public SpellInfo SpellInfo { get { return CardInfo as SpellInfo; } }
     public int Power { get { return _power; } set { _power = value; } }
     public Vector2Int AreaOfEffect { get { return _areaOfEffect; } set { _areaOfEffect = value; } }
 }

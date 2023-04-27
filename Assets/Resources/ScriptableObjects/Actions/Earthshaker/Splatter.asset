@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44d12ee8257b27340b9c6075a6c1ed8f, type: 3}
   m_Name: Splatter
   m_EditorClassIdentifier: 
-  _cost: 2
   _name: Splatter
-  _description: Deal damage to target with overkill damage.
+  _description: 
   _sprite: {fileID: 21300000, guid: d84cfdf7665500545a06196a56ecb5c5, type: 3}
-  _keywords: 010000000c000000
   _range: 0
+  _keywords: 010000000c000000
   _validTargets: 010000

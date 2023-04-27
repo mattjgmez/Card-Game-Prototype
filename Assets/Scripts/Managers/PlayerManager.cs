@@ -30,7 +30,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         TMP_Text text = player == 1 ? _supplyText_Player1 : _supplyText_Player2;
         int supply = player == 1 ? _supply_Player1 : _supply_Player2;
 
-        UIManager.Instance.UpdateUIText(text, supply.ToString());
+        text.text = supply.ToString();
     }
 
     public bool CanPlayCard(int cost, int player)

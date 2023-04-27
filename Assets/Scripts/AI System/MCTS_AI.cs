@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static PlaySpellCardAction;
 
 /// <summary>
 /// Represents a Monte Carlo Tree Search (MCTS) based AI for decision-making in a card game.
@@ -105,11 +104,11 @@ public class MCTS_AI
         GameState currentState = node.State.Clone();
 
         int gameLimiter = 0;
-        while (!currentState.IsTerminal() && gameLimiter <= 20)
+        while (!currentState.IsTerminal() && gameLimiter <= 100)
         {
             gameLimiter++;
+
             // Simulate each phase of the game
-            // You can either call separate methods for each phase, or incorporate the logic here
 
             // Start phase
             currentState.StartPhase();

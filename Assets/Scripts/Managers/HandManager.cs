@@ -22,21 +22,10 @@ public class HandManager : MonoSingleton<HandManager>
         TurnManager.Instance.StartPhase += DrawStartingCards;
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            DrawCards(_startingHandSize, 1, transform);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            DrawCards(_cardsDrawnPerTurn, 1, transform);
-        }
-    }
-
     private void OnDisable()
     {
         TurnManager.Instance.DrawPhase -= DrawPhase;
+        TurnManager.Instance.StartPhase -= DrawStartingCards;
     }
 
     private void OnDrawGizmos()
@@ -136,7 +125,7 @@ public class HandManager : MonoSingleton<HandManager>
 
         if (cardQueue == null)
         {
-            Debug.LogError($"cardQueue is null for Player {player}.");
+            Debug.LogError($"HandManager.DrawCards: cardQueue is null for Player {player}.");
             return;
         }
 
@@ -145,13 +134,15 @@ public class HandManager : MonoSingleton<HandManager>
             if (cardQueue.Count > 0)
             {
                 CardInfo drawnCard = cardQueue.Dequeue();
+                Debug.Log($"HandManager.DrawCards: Player {player} drew card: {drawnCard.Name}");
+
                 Card card = InstantiateCard(drawnCard, handTransform).GetComponent<Card>();
                 _cardsInHand[player].Add(card.gameObject);
                 card.IsPlayer1 = player == 1;
             }
             else
             {
-                Debug.LogWarning($"No more cards left in player {player}'s deck.");
+                Debug.LogWarning($"HandManager.DrawCards: No more cards left in player {player}'s deck.");
                 break;
             }
         }
@@ -181,7 +172,7 @@ public class HandManager : MonoSingleton<HandManager>
         }
         else
         {
-            Debug.LogError($"Invalid CardInfo type of {cardInfo.GetType()}.");
+            Debug.LogError($"HandManager.InstantiateCard: Invalid CardInfo type of {cardInfo.GetType()}.");
             return null;
         }
 
@@ -192,7 +183,7 @@ public class HandManager : MonoSingleton<HandManager>
         }
         else
         {
-            Debug.LogError("Card component not found on instantiated card.");
+            Debug.LogError("HandManager.InstantiateCard: Card component not found on instantiated card.");
             return null;
         }
 
@@ -203,7 +194,7 @@ public class HandManager : MonoSingleton<HandManager>
     {
         if (!_cardsInHand.ContainsKey(player))
         {
-            Debug.LogWarning($"Invalid player number: {player}");
+            Debug.LogWarning($"HandManager.GetHand: Invalid player number: {player}");
             return null;
         }
 

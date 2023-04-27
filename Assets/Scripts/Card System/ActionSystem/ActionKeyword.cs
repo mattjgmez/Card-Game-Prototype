@@ -1,4 +1,4 @@
-public enum ActionKeywords
+public enum ActionKeyword
 {
     Damage = 1,
     Heal = 2,

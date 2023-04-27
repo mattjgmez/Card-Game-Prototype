@@ -175,15 +175,16 @@ public class TurnManager : MonoSingleton<TurnManager>
 
         _scale += player1Turn ? 1 : -1;
 
+        UIManager.Instance.AdjustScaleSlider(_scale);
         UpdateColumnsVisibility();
 
         if (_scale == 4)
         {
-            // Player 1 wins
+            UIManager.Instance.EnableGameOverUI(true);
         }
         if (_scale == -4)
         {
-            // Player 2 wins
+            UIManager.Instance.EnableGameOverUI(false);
         }
     }
 

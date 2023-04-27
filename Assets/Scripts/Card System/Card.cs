@@ -5,10 +5,11 @@ using System;
 
 public class Card : EventReceiver
 {
+    [SerializeField, Header("Card Components")] 
+    protected bool _isPlayer_1;
     [SerializeField] protected Canvas _canvas;
 
-    [SerializeField] protected CardInfo _info;
-    [SerializeField] protected bool _isPlayer_1;
+    private CardInfo _cardInfo;
     protected string _name;
     protected bool _inHand = true;
     protected bool _isSelected;
@@ -23,15 +24,15 @@ public class Card : EventReceiver
 
     protected virtual void InitializeInfo()
     {
-        _info.Init();
+        CardInfo.Init();
 
-        if (_info == null)
+        if (CardInfo == null)
         {
             Debug.LogError("Card: CardInfo is null.");
         }
 
-        _name = _info.Name;
-        Debug.Log($"Card.InitializeInfo: Name={_name}, Info={_info}");
+        _name = CardInfo.Name;
+        Debug.Log($"Card.InitializeInfo: Name={_name}, Info={CardInfo}");
     }
 
     protected virtual void Update()
@@ -49,7 +50,7 @@ public class Card : EventReceiver
 
     protected override void OnRightClick()
     {
-        // Show extended information.
+        UIManager.Instance.ToggleCardInfoUI(CardInfo);
     }
 
     public void OnMouseEnter()
@@ -72,11 +73,22 @@ public class Card : EventReceiver
     {
         get
         {
-            return _info;
+            if (_cardInfo is UnitInfo unitInfo)
+            {
+                return unitInfo;
+            }
+            else if (_cardInfo is SpellInfo spellInfo)
+            {
+                return spellInfo;
+            }
+            else
+            {
+                return _cardInfo;
+            }
         }
         set
         {
-            _info = value;
+            _cardInfo = value;
         }
     }
 
@@ -87,7 +99,7 @@ public class Card : EventReceiver
     {
         if (this is UnitCard card)
         {
-            return $"Card as UnitCard: Name={GetName}, Power={card.GetPower}, Health={card.GetHealth}, Cost={card.GetCost}, MaxHealth={card.GetMaxHealth}, Actions={string.Join(", ", card.GetActions)}, NextAction={card.GetNextAction}, IsProvoked={card.IsProvoked}, CurrentTile={(card.CurrentTile != null ? card.CurrentTile.ToString() : "null")}";
+            return $"Card as UnitCard: Name={GetName}, Power={card.Power}, Health={card.Health}, Cost={card.Cost}, MaxHealth={card.MaxHealth}, Actions={string.Join(", ", card.Actions)}, NextAction={card.NextAction}, IsProvoked={card.IsProvoked}, CurrentTile={(card.CurrentTile != null ? card.CurrentTile.ToString() : "null")}";
         }
         return base.ToString();
     }

@@ -9,7 +9,8 @@ public abstract class CardUI : Interactable
     [Header("Canvas Components")]
     [SerializeField] protected TMP_Text _nameText;
 
-    public event Action<CardInfo> OnCardClicked;
+    public event Action<CardInfo> CardUILeftClicked;
+    public event Action<CardInfo> CardUIRightClicked;
 
     public abstract void SetCardInfo(CardInfo info);
 
@@ -17,7 +18,13 @@ public abstract class CardUI : Interactable
 
     protected override void OnLeftClick()
     {
-        OnCardClicked?.Invoke(GetCardInfo());
+        CardUILeftClicked?.Invoke(GetCardInfo());
+    }
+
+    protected override void OnRightClick()
+    {
+        Debug.Log("CardUI right clicked.");
+        CardUIRightClicked?.Invoke(GetCardInfo());
     }
 
     protected abstract CardInfo GetCardInfo();

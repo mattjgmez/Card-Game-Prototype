@@ -4,17 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static UnityEngine.Rendering.DebugUI;
 
 public class GameManager : MonoSingleton<GameManager>
 {
+    #region VARIABLES
     private (Dictionary<CardInfo, int>, string) _currentDeck_Player1 = default;
     private (Dictionary<CardInfo, int>, string) _currentDeck_Player2 = default;
     private Queue<CardInfo> _cardQueue_Player1;
     private Queue<CardInfo> _cardQueue_Player2;
 
     public Action<(Dictionary<CardInfo, int>, string)> CurrentDeckChanged;
-
     public (Dictionary<CardInfo, int>, string) CurrentDeck_Player1
     {
         get
@@ -36,7 +35,6 @@ public class GameManager : MonoSingleton<GameManager>
             }
         }
     }
-
     public (Dictionary<CardInfo, int>, string) CurrentDeck_Player2
     {
         get
@@ -53,6 +51,7 @@ public class GameManager : MonoSingleton<GameManager>
             }
         }
     }
+    #endregion
 
     protected override void Init()
     {
@@ -61,11 +60,18 @@ public class GameManager : MonoSingleton<GameManager>
 
     public void StartGame()
     {
+        Debug.Log("GameManager.StartGame called.");
+
         if (_currentDeck_Player1 != default)
         {
-            ChangeScene("Gameplay");
+            if (_currentDeck_Player2 == default)
+            {
+                _cardQueue_Player2 = CreateCardQueue(SelectAIDeckFromFolder().Item1);
+            }
+
             ShuffleCardQueue(1);
             ShuffleCardQueue(2);
+            ChangeScene("Gameplay");
         }
     }
 
@@ -74,6 +80,12 @@ public class GameManager : MonoSingleton<GameManager>
         SceneManager.LoadScene(sceneName);
     }
 
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    #region DECK MANAGEMENT
     /// <summary>
     /// Creates a queue of CardInfo objects based on the provided deck.
     /// </summary>
@@ -105,11 +117,6 @@ public class GameManager : MonoSingleton<GameManager>
     {
         Queue<CardInfo> cardQueue = player == 1 ? _cardQueue_Player1 : _cardQueue_Player2;
 
-        if (cardQueue == default)
-        {
-            cardQueue = CreateCardQueue(SelectAIDeckFromFolder().Item1);
-        }
-
         List<CardInfo> cardList = cardQueue.ToList();
         System.Random random = new System.Random();
 
@@ -127,6 +134,8 @@ public class GameManager : MonoSingleton<GameManager>
         {
             cardQueue.Enqueue(card);
         }
+
+        Debug.Log($"GameManager.ShuffleCardQueue: Player {player}'s deck shuffled to: {DebugTools.ListToString(cardQueue.ToList())}");
     }
 
     public Queue<CardInfo> GetCardQueue(int player)
@@ -149,4 +158,5 @@ public class GameManager : MonoSingleton<GameManager>
 
         return deckList[randomIndex];
     }
+    #endregion
 }

@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44d12ee8257b27340b9c6075a6c1ed8f, type: 3}
   m_Name: Cleave
   m_EditorClassIdentifier: 
-  _cost: 3
   _name: Cleave
-  _description: Deal damage to enemies adjacent to target.
+  _description: 
   _sprite: {fileID: 21300000, guid: 73688d619967e6044b813940bddf97a7, type: 3}
-  _keywords: 0100000003000000
   _range: 0
+  _keywords: 0100000003000000
   _validTargets: 010000
