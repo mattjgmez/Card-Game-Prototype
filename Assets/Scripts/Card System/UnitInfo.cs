@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
-using UnityEditor.Animations;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Unit", menuName = "ScriptableObjects/Unit"), Serializable]
@@ -15,7 +13,6 @@ public class UnitInfo : CardInfo
     [SerializeField] private List<ActionInfo> _actions;
     [SerializeField] private List<CardTribe> _tribes;
     [SerializeField] private Sprite _sprite;
-    [SerializeField] private AnimatorController _animController;
 
     public int Health
     {
@@ -57,11 +54,5 @@ public class UnitInfo : CardInfo
     {
         get { return _sprite; }
         set { _sprite = value; }
-    }
-
-    public AnimatorController AnimController
-    {
-        get { return _animController; }
-        set { _animController = value; }
     }
 }

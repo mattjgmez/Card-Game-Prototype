@@ -26,17 +26,29 @@ public class TurnManager : MonoSingleton<TurnManager>
     private bool _isFirstRound = true;
     private List<UnitCard> _activeCards = new List<UnitCard>();
 
-    private void Start()
+    private void OnDestroy()
     {
-        StartCoroutine(InitializeGame());
+        StartPhase = null;
+        PlayPhase = null;
+        ActionPhase = null;
+        AdvancePhase = null;
+        DrawPhase = null;
+        EndPhase = null;
     }
 
-    private IEnumerator InitializeGame()
+    public void InitializeGame()
     {
+        StartCoroutine(InitializeGameCoroutine());
+    }
+
+    public IEnumerator InitializeGameCoroutine()
+    {
+        Debug.Log("InitializeGameCoroutine called.");
         // Randomly set _currentTurn to either PlayerTurn.Player1 or PlayerTurn.Player2
         _currentTurn = (UnityEngine.Random.Range(0, 2) == 0) ? PlayerTurn.Player1 : PlayerTurn.Player2;
 
-        yield return new WaitForSeconds(1);
+        yield return null;
+        yield return null;
 
         _currentTurnState = TurnPhase.Start;
         ExecuteCurrentTurnState();
@@ -180,11 +192,11 @@ public class TurnManager : MonoSingleton<TurnManager>
 
         if (_scale == 4)
         {
-            UIManager.Instance.EnableGameOverUI(true);
+            UIManager.Instance.SetPauseMenu(true, "Victory!");
         }
         if (_scale == -4)
         {
-            UIManager.Instance.EnableGameOverUI(false);
+            UIManager.Instance.SetPauseMenu(false, "Defeat.");
         }
     }
 

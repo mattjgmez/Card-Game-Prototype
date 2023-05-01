@@ -15,9 +15,16 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
 
     private void Awake()
     {
-        _instance = (T)this;
-
-        Init();
+        if (_instance == null)
+        {
+            _instance = (T)this;
+            Init();
+        }
+        else if (_instance != this)
+        {
+            // Destroy the new instance if it's not the same as the existing one
+            Destroy(gameObject);
+        }
     }
 
     protected virtual void Init() { }

@@ -11,6 +11,7 @@ using UnityEngine.UI;
 public class CardCollectionManager : MonoSingleton<CardCollectionManager>
 {
     [SerializeField] private int _deckLimit = 30;
+    [SerializeField] private int _cardLimit = 3;
     [SerializeField] private GameObject _unitCardPrefab;
     [SerializeField] private GameObject _spellCardPrefab;
     [SerializeField] private GameObject _cardInDeckPrefab;
@@ -93,7 +94,10 @@ public class CardCollectionManager : MonoSingleton<CardCollectionManager>
 
         if (_currentDeck.ContainsKey(cardInfo))
         {
-            _currentDeck[cardInfo]++;
+            if (_currentDeck.TryGetValue(cardInfo, out int value) && value < _cardLimit)
+            {
+                _currentDeck[cardInfo]++;
+            }
         }
         else
         {

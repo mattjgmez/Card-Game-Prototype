@@ -9,11 +9,6 @@ public class Background : MonoBehaviour
         TurnManager.Instance.AdvancePhase += ScrollBackground;
     }
 
-    private void OnDisable()
-    {
-        TurnManager.Instance.AdvancePhase -= ScrollBackground;
-    }
-
     private void ScrollBackground(PlayerTurn state)
     {
         StartCoroutine(ScrollBackgroundCoroutine());

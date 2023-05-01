@@ -22,27 +22,6 @@ public class AIController : MonoBehaviour
         TurnManager.Instance.PlayPhase += StartAITurn;
     }
 
-    private void OnDisable()
-    {
-        TurnManager.Instance.PlayPhase -= StartAITurn;
-    }
-
-    private (Dictionary<CardInfo, int>, string) SelectDeckFromFolder()
-    {
-        List<(Dictionary<CardInfo, int>, string)> deckList = SaveDeckSystem.DecksInFolder("AIDecks");
-
-        if (deckList.Count == 0)
-        {
-            Debug.LogError("No decks found in 'AIDecks' folder.");
-            return default;
-        }
-
-        System.Random random = new System.Random();
-        int randomIndex = random.Next(deckList.Count);
-
-        return deckList[randomIndex];
-    }
-
     private void StartAITurn(PlayerTurn turn)
     {
         if (turn == PlayerTurn.Player2)

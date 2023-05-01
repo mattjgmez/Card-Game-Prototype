@@ -1,5 +1,7 @@
 using System;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 public class CardInfo : ScriptableObject
@@ -8,9 +10,11 @@ public class CardInfo : ScriptableObject
 
     public void Init()
     {
+    #if UNITY_EDITOR
         string assetPath = AssetDatabase.GetAssetPath(this);
         string fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
         _name = fileName;
+    #endif
     }
 
     public string Name

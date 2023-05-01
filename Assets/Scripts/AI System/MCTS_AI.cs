@@ -73,7 +73,7 @@ public class MCTS_AI
             foreach (MCTS_Node child in node.Children)
             {
                 float ucb1 = child.GetAverageScore() + ExplorationConstant * Mathf.Sqrt(Mathf.Log(node.Visits) / child.Visits);
-                if (ucb1 > bestScore)
+                if (ucb1 > bestScore || (ucb1 == bestScore && child.Visits < bestChild.Visits))
                 {
                     bestScore = ucb1;
                     bestChild = child;
@@ -104,10 +104,8 @@ public class MCTS_AI
         GameState currentState = node.State.Clone();
 
         int gameLimiter = 0;
-        while (!currentState.IsTerminal() && gameLimiter <= 100)
+        while (!currentState.IsTerminal() && gameLimiter++ <= 100)
         {
-            gameLimiter++;
-
             // Simulate each phase of the game
 
             // Start phase
@@ -115,16 +113,10 @@ public class MCTS_AI
 
             // Play phase
             int turnLimiter = 0;
-            while (turnLimiter < 1000)
+            while (!currentState.IsTerminal() && turnLimiter++ < 1000)
             {
-                turnLimiter++;
-                if (turnLimiter >= 1000)
-                {
-                    IGameAction test = new EndTurnAction();
-                    test.Apply(currentState);
-                }
-
                 IGameAction randomAction = currentState.GetRandomAction();
+                Debug.Log($"MCTS_AI.Simulate: Random action is {randomAction}.");
                 if (randomAction is EndTurnAction)
                 {
                     break;

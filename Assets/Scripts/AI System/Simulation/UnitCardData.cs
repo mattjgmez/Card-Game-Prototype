@@ -64,7 +64,7 @@ public class UnitCardData : CardData
         sb.AppendLine($"IsProvoked: {isProvoked}");
         sb.AppendLine($"CurrentTile: {currentTile}");
 
-        Debug.Log(sb.ToString());
+        //Debug.Log(sb.ToString());
 
         // Construct and return a new UnitCardData object using the temporary variables
         return new UnitCardData()
@@ -103,7 +103,7 @@ public class UnitCardData : CardData
 
     public void TriggerAction(GameState gameState)
     {
-        Debug.Log($"GameState{gameState.ID}: {this}.TriggerAction (start): Card: {Name} CurrentTile: {CurrentTile.GridPosition}");
+        //Debug.Log($"GameState{gameState.ID}: {this}.TriggerAction (start): Card: {Name} CurrentTile: {CurrentTile.GridPosition}");
 
         ActionInfo action = Actions[NextAction];
         List<UnitCardData> targetCards = TargetCards(this, action, gameState); // This is the only place TargetCards is called.

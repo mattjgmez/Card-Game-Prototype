@@ -5,6 +5,7 @@ using static GridSystem;
 public class GridManager : MonoSingleton<GridManager>
 {
     [SerializeField] private GameObject _tilePrefab;
+    [SerializeField] private bool _isDebug;
 
     private Tile[,] _grid;
     private List<Tile> _playerTiles = new List<Tile>();
@@ -69,6 +70,8 @@ public class GridManager : MonoSingleton<GridManager>
 
     public void TogglePlayerSpaces(bool value)
     {
+        if (_isDebug) return;
+
         foreach (Tile tile in _grid)
         {
             // If the tile is in playerTiles and has no active card, call SetTileActive with the value parameter

@@ -23,8 +23,8 @@ public class GameState
     public int Player2Supply;
 
     // Variables to handle the weight of different GameStates
-    public float BoardControlWeight = 10f;
-    public float HandAdvantageWeight = 1f;
+    public float BoardControlWeight = 1f;
+    public float HandAdvantageWeight = -1f;
     public float SupplyAdvantageWeight = 0.01f;
 
     public float RangedWeight = 1f;
@@ -144,15 +144,13 @@ public class GameState
 
         foreach (Card card in hand)
         {
-            Debug.Log($"GameState{ID}.GetHandData({playerNumber}): Getting data for card: {card.CardInfo.Name} of type: {card.GetType()}");
+            //Debug.Log($"GameState{ID}.GetHandData({playerNumber}): Getting data for card: {card.CardInfo.Name} of type: {card.GetType()}");
 
             // Use reflection to determine the type of the card
             Type cardType = card.GetType();
             if (cardType == typeof(UnitCard))
             {
-                Debug.Log($"Before casting: {card}");
                 UnitCard unitCard = (UnitCard)card;
-                Debug.Log($"After casting: {unitCard}");
                 handData.Add(UnitCardData.FromUnitCard(unitCard));
             }
             else if (cardType == typeof(SpellCard))
@@ -326,16 +324,19 @@ public class GameState
 
         // Get the current player's hand
         List<CardData> currentPlayerHand = CurrentTurn == PlayerTurn.Player1 ? Player1Hand : Player2Hand;
-        Debug.Log($"GameState{ID}.GetAvailableActions: CurrentPlayerHand: {DebugTools.ListToString(currentPlayerHand)}");
+
+        StringBuilder debug = new StringBuilder();
+        debug.AppendLine($"GameState{ID}.GetAvailableActions: CurrentPlayerHand: {DebugTools.ListToString(currentPlayerHand)}");
 
         foreach (CardData card in currentPlayerHand)
         {
-            Debug.Log($"GameState{ID}.GetAvailableActions: Checking {card.Name} of type {card.GetType().Name} for available actions.");
+            debug.AppendLine($"GameState{ID}.GetAvailableActions: Checking {card.Name} of type {card.GetType().Name} for available actions.");
             if (card is UnitCardData unitCard)
             {
-                Debug.Log($"GameState{ID}.GetAvailableActions: Generating available actions for {unitCard.Name}.");
+                debug.AppendLine($"GameState{ID}.GetAvailableActions: Generating available actions for {unitCard.Name}.");
                 GenerateUnitCardActions(unitCard, availableActions);
             }
+            //Spell logic is disabled until other issues are solved
             //else if (card is SpellCardData spellCard)
             //{
             //    GenerateSpellCardActions(spellCard, availableActions);
@@ -349,7 +350,8 @@ public class GameState
         // Add the EndTurnAction as an available action
         availableActions.Add(new EndTurnAction());
 
-        Debug.Log($"GameState{ID}.GetAvailableActions: Available Actions: {DebugTools.ListToString(availableActions)}");
+        debug.AppendLine($"GameState{ID}.GetAvailableActions: Available Actions: {DebugTools.ListToString(availableActions)}");
+        Debug.Log(debug.ToString());
 
         return availableActions;
     }
@@ -358,11 +360,12 @@ public class GameState
     {
         int currentPlayerSupply = CurrentTurn == PlayerTurn.Player1 ? Player1Supply : Player2Supply;
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder debug = new StringBuilder();
 
         if (unitCard.Cost <= currentPlayerSupply)
         {
-            sb.AppendLine($"GameState{ID}.GenerateUnitCardActions: {(CurrentTurn == PlayerTurn.Player1 ? "Player1" : "Player2")} can afford to play {unitCard.Name}");
+            debug.AppendLine($"GameState{ID}.GenerateUnitCardActions: {(CurrentTurn == PlayerTurn.Player1 ? "Player1" : "Player2")} can afford to play {unitCard.Name}");
+           
             foreach (int x in GetActiveColumns())
             {
                 if ((CurrentTurn == PlayerTurn.Player1 && x < 3) || (CurrentTurn == PlayerTurn.Player2 && x > 2))
@@ -370,21 +373,24 @@ public class GameState
                     for (int y = 0; y < 5; y++)
                     {
                         TileData tile = Grid[x, y];
-                        sb.AppendLine($"GameState{ID}.GenerateUnitCardActions: Checking Tile {Grid[x,y].GridPosition} for active card.");
+
+                        debug.AppendLine($"GameState{ID}.GenerateUnitCardActions: Checking Tile {Grid[x,y].GridPosition} for active card.");
+                        
                         if (tile.ActiveCard == null)
                         {
                             Vector2Int position = new Vector2Int(x, y);
                             PlayUnitCardAction action = new PlayUnitCardAction(unitCard, position);
 
                             availableActions.Add(action);
-                            sb.AppendLine($"GameState{ID}.GenerateUnitCardActions: Adding {action} {unitCard.Name} to Tile {Grid[x,y].GridPosition}.");
+
+                            debug.AppendLine($"GameState{ID}.GenerateUnitCardActions: Adding possible action: {action}.");
                         }
                     }
                 }
             }
         }
 
-        Debug.Log(sb.ToString());
+        Debug.Log(debug.ToString());
     }
 
     private void GenerateSpellCardActions(SpellCardData spellCard, List<IGameAction> availableActions)
@@ -441,9 +447,9 @@ public class GameState
         float handAdvantage = (Player2Hand.Count - Player1Hand.Count) * HandAdvantageWeight;
         float supplyAdvantage = (Player2Supply - Player1Supply) * SupplyAdvantageWeight;
 
-        float score = Scale * 10 + boardControl + handAdvantage + supplyAdvantage;
+        float score = -Scale * 10 + boardControl + handAdvantage + supplyAdvantage;
 
-        Debug.Log ($"GameState/GetScore: BoardControl: {boardControl}, HandAdvantage: {handAdvantage}, SupplyAdvantage: {supplyAdvantage}, Total: {score}");
+        Debug.Log ($"GameState{ID}.GetScore: Scale: {Scale} BoardControl: {boardControl}, HandAdvantage: {handAdvantage}, SupplyAdvantage: {supplyAdvantage}, Total: {score}");
 
         return score;
     }

@@ -35,5 +35,11 @@ public class MenuManager : MonoBehaviour
         }
 
         GameManager.Instance.CurrentDeck_Player1 = default;
+        GameManager.Instance.CurrentDeck_Player2 = default;
+    }
+
+    public void CallStartGame()
+    {
+        GameManager.Instance.StartGame();
     }
 }

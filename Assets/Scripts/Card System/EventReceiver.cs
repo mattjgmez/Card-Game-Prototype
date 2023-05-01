@@ -22,22 +22,22 @@ public abstract class EventReceiver : Interactable
         _turnManager.EndPhase += OnEndTurn;
     }
 
-    protected virtual void OnDestroy()
-    {
-        if (_turnManager == null)
-        {
-            Debug.LogWarning("TurnManager not found.");
-            return;
-        }
+    //protected virtual void OnDestroy()
+    //{
+    //    if (_turnManager == null)
+    //    {
+    //        Debug.LogWarning("TurnManager not found.");
+    //        return;
+    //    }
 
-        // Unsubscribe from events
-        _turnManager.StartPhase -= OnStartTurn;
-        _turnManager.PlayPhase -= OnPlayPhase;
-        _turnManager.ActionPhase -= OnActionPhase;
-        _turnManager.AdvancePhase -= OnAdvance;
-        _turnManager.DrawPhase -= OnDrawCards;
-        _turnManager.EndPhase -= OnEndTurn;
-    }
+    //    // Unsubscribe from events
+    //    _turnManager.StartPhase -= OnStartTurn;
+    //    _turnManager.PlayPhase -= OnPlayPhase;
+    //    _turnManager.ActionPhase -= OnActionPhase;
+    //    _turnManager.AdvancePhase -= OnAdvance;
+    //    _turnManager.DrawPhase -= OnDrawCards;
+    //    _turnManager.EndPhase -= OnEndTurn;
+    //}
 
     protected virtual void OnStartTurn(PlayerTurn turn) { }
     protected virtual void OnPlayPhase(PlayerTurn turn) { }

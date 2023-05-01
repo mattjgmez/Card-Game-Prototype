@@ -1675,7 +1675,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 059be05e7b5be394a80661b7e38f7ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _info: {fileID: 0}
   _isPlayer_1: 0
   _canvas: {fileID: 7404673423703713223}
   _inHandVisuals: {fileID: 3179242729525186}

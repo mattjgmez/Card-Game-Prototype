@@ -277,13 +277,15 @@ public class UnitCard : Card
         SetActionIcons();
         UpdateText();
 
-        Debug.Log($"UnitCard.InitializeInfo: Name={_name}, Power={_power}, Health={_health}, Cost={_cost}, MaxHealth={_maxHealth}, Actions={_actions}");
+        //Debug.Log($"UnitCard.InitializeInfo: Name={_name}, Power={_power}, Health={_health}, Cost={_cost}, MaxHealth={_maxHealth}, Actions={_actions}");
     }
 
     private void EnterPlay()
     {
         PlayerManager playerManager = PlayerManager.Instance;
         HandManager handManager = HandManager.Instance;
+
+        handManager.RemoveCardFromHand(gameObject, _isPlayer_1 ? 1 : 2);
 
         _isPlayer_1 = _currentTile.GridPosition.x < 3;
         _artRenderer.flipX = !_isPlayer_1;
@@ -294,8 +296,6 @@ public class UnitCard : Card
 
         playerManager.LowerSupply(_cost, player);
         playerManager.UpdateSupplyText(player);
-
-        handManager.RemoveCardFromHand(gameObject, player);
 
         if (_isPlayer_1)
         {

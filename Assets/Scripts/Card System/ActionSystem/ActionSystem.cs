@@ -183,11 +183,13 @@ public static class ActionSystem
         }
         else
         {
-            targetCards.Add(targetTile.ActiveCard);
-
             if (action.HasKeyword(ActionKeyword.Cleave) && targetTile != null)
             {
                 AddCleaveTiles(card, targetTile, targetCards);
+            }
+            else if (targetTile != null)
+            {
+                targetCards.Add(targetTile.ActiveCard);
             }
 
             if (action.HasKeyword(ActionKeyword.Burst) && targetTile != null)
@@ -195,7 +197,6 @@ public static class ActionSystem
                 AddBurstTiles(card, targetTile, targetCards);
             }
         }
-
         return targetCards;
     }
 
@@ -207,10 +208,9 @@ public static class ActionSystem
     /// <param name="targetCards">The list of cards to add on to.</param>
     public static void AddCleaveTiles(UnitCard card, Tile targetTile, List<UnitCard> targetCards)
     {
-        int targetX = targetTile.ActiveCard.CurrentTile.GridPosition.x;
+        int targetX = targetTile.GridPosition.x;
         int cardY = card.CurrentTile.GridPosition.y;
-        int maxRows = 5;
-        int[] rowOffsets = { -1, 1 };
+        int[] rowOffsets = { -1, 0, 1 };
 
         foreach (int yOffset in rowOffsets)
         {
@@ -222,7 +222,7 @@ public static class ActionSystem
             }
 
             UnitCard targetCard = GridManager.Instance.Grid[targetX, newY].ActiveCard;
-            if (newY >= 0 && newY < maxRows && targetCard != null)
+            if (targetCard != null)
             {
                 targetCards.Add(targetCard);
             }

@@ -27,7 +27,7 @@ public class GameManager : MonoSingleton<GameManager>
             CurrentDeckChanged?.Invoke(_currentDeck_Player1);
 
             string deckName = value == default ? "NULL" : value.Item2;
-            //Debug.Log($"Current Deck set to {deckName}.");
+            Debug.Log($"Current Deck set to {deckName}.");
 
             if (value != default)
             {
@@ -58,21 +58,42 @@ public class GameManager : MonoSingleton<GameManager>
         DontDestroyOnLoad(gameObject);
     }
 
+    [ContextMenu("StartGame")]
     public void StartGame()
     {
         Debug.Log("GameManager.StartGame called.");
 
-        if (_currentDeck_Player1 != default)
-        {
-            if (_currentDeck_Player2 == default)
-            {
-                _cardQueue_Player2 = CreateCardQueue(SelectAIDeckFromFolder().Item1);
-            }
+        //if (_currentDeck_Player1 != default)
+        //{
+            StartCoroutine(StartGameCoroutine());
+        //}
+    }
 
-            ShuffleCardQueue(1);
-            ShuffleCardQueue(2);
-            ChangeScene("Gameplay");
+    public IEnumerator StartGameCoroutine()
+    {
+        if (_currentDeck_Player1 == default)
+        {
+            _cardQueue_Player1 = CreateCardQueue(SelectAIDeckFromFolder().Item1);
         }
+        if (_currentDeck_Player2 == default)
+        {
+            _cardQueue_Player2 = CreateCardQueue(SelectAIDeckFromFolder().Item1);
+        }
+
+        ShuffleCardQueue(1);
+        ShuffleCardQueue(2);
+
+        ChangeScene("Gameplay");
+
+        yield return new WaitForEndOfFrame();
+        while (SceneManager.GetActiveScene().name != "Gameplay")
+        {
+            Debug.Log("GameManager.StartGameCoroutine: Scene Loading.");
+            yield return null;
+        }
+        Debug.Log("GameManager.StartGameCoroutine: Scene Loaded.");
+
+        TurnManager.Instance.InitializeGame();
     }
 
     public void ChangeScene(string sceneName)
@@ -82,6 +103,7 @@ public class GameManager : MonoSingleton<GameManager>
 
     public void QuitGame()
     {
+        Debug.Log("GameManager.QuitGame: Quitting Game.");
         Application.Quit();
     }
 
@@ -135,7 +157,7 @@ public class GameManager : MonoSingleton<GameManager>
             cardQueue.Enqueue(card);
         }
 
-        Debug.Log($"GameManager.ShuffleCardQueue: Player {player}'s deck shuffled to: {DebugTools.ListToString(cardQueue.ToList())}");
+        //Debug.Log($"GameManager.ShuffleCardQueue: Player {player}'s deck shuffled to: {DebugTools.ListToString(cardQueue.ToList())}");
     }
 
     public Queue<CardInfo> GetCardQueue(int player)

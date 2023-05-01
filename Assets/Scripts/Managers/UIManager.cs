@@ -6,15 +6,13 @@ using TMPro;
 
 public class UIManager : MonoSingleton<UIManager>
 {
-    [SerializeField] Canvas _victoryCanvas;
-    [SerializeField] Canvas _lossCanvas;
+    [SerializeField] Canvas _pauseMenuCanvas;
+    [SerializeField] TMP_Text _pauseText;
 
     [SerializeField] Slider _scaleSlider;
 
     [SerializeField] GameObject _cardInfoUIPrefab;
     private CardInfoUI _cardInfoUI;
-
-    [SerializeField] Canvas _pauseMenuCanvas;
 
     [SerializeField] GameObject _endTurnButton;
 
@@ -23,34 +21,29 @@ public class UIManager : MonoSingleton<UIManager>
         TurnManager.Instance.PlayPhase += EnableEndTurnButton;
     }
 
-    private void OnDisable()
-    {
-        TurnManager.Instance.PlayPhase -= EnableEndTurnButton;
-    }
-
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            TogglePauseMenu();
+            SetPauseMenu(!_pauseMenuCanvas.enabled, "Game Paused");
         }
     }
 
     // Win/Loss UI Method
-    public void EnableGameOverUI(bool isVictory)
+    public void SetPauseMenu(bool value, string text)
     {
-        if (_victoryCanvas == null ||  _lossCanvas == null)
+        if (_pauseMenuCanvas == null)
         {
-            Debug.LogError("UIManager.EnableGameOverUI: Game Over Canvas not found.");
+            Debug.LogError("UIManager.SetPauseMenu: Pause Canvas not found.");
             return;
         }
 
-        // Pause game
-        Time.timeScale = 0f;
+        // Pause or Unpause game
+        Time.timeScale = value ? 0 : 1;
+        _pauseMenuCanvas.enabled = value;
 
-        // Enable appropriate canvas
-        _victoryCanvas.enabled = isVictory;
-        _lossCanvas.enabled = !isVictory;
+        // Set text
+        _pauseText.text = text;
     }
 
     // Card Info UI Method
@@ -78,15 +71,6 @@ public class UIManager : MonoSingleton<UIManager>
         _scaleSlider.value = amount;
     }
 
-    // Pause Menu
-    public void TogglePauseMenu()
-    {
-        bool value = _pauseMenuCanvas.enabled;
-
-        Time.timeScale = value ? 0 : 1;
-        _pauseMenuCanvas.enabled = !value;
-    }
-
     // Toggle End Turn button?
     public void EnableEndTurnButton(PlayerTurn turn)
     {
@@ -96,12 +80,12 @@ public class UIManager : MonoSingleton<UIManager>
         }
     }
 
+    #region BUTTON METHODS
     public void DisableEndTurnButton()
     {
         _endTurnButton.SetActive(false);
     }
 
-    #region BUTTON METHODS
     public void QuitGame()
     {
         GameManager.Instance.QuitGame();

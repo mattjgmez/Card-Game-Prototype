@@ -13,49 +13,52 @@ public enum ActionRange
 public static class ActionRanges
 {
     public static List<int> YOffsets = new List<int>() { 0, -1, 1 };
+    public static List<int> XOrder_Player1 = new List<int> { 3, 4, 5, 2, 1, 0 };
+    public static List<int> XOrder_Player2 = new List<int> { 2, 1, 0, 3, 4, 5 };
 
     public static List<Tile> GetValidTargets(UnitCard unit, ActionRange range, List<bool> validTargets)
     {
         List<Tile> targets = new List<Tile>();
-        bool isPlayer1 = unit.IsPlayer1;
-
-        int startX = isPlayer1 ? 2 : 3;
-        int direction = isPlayer1 ? 1 : -1;
 
         switch (range)
         {
             case ActionRange.Melee:
-                targets = GetMeleeTargets(unit, startX, direction, validTargets);
+                targets = GetMeleeTargets(unit, validTargets);
                 break;
             case ActionRange.Ranged:
-                targets = GetRangedTargets(unit, startX, direction, validTargets);
+                targets = GetRangedTargets(unit, validTargets);
                 break;
             case ActionRange.Reach:
-                targets = GetReachTargets(unit, startX, direction, validTargets);
+                targets = GetReachTargets(unit, validTargets);
                 break;
             case ActionRange.Global:
-                targets = GetGlobalTargets(unit, startX, direction, validTargets);
+                targets = GetGlobalTargets(unit, validTargets);
                 break;
         }
 
         return targets;
     }
 
-    private static List<Tile> GetMeleeTargets(UnitCard unit, int startX, int direction, List<bool> validTargets)
+    private static List<Tile> GetMeleeTargets(UnitCard unit, List<bool> validTargets)
     {
         List<Tile> targets = new List<Tile>();
         Vector2Int currentPosition = unit.CurrentTile.GridPosition;
+        List<int> xOrder = unit.IsPlayer1 ? XOrder_Player1 : XOrder_Player2;
 
-        for (int offsetX = 0; offsetX <= 1; offsetX++)
+        foreach (int x in xOrder)
         {
+            if (Mathf.Abs(x - currentPosition.x) > 1)
+            {
+                continue;
+            }
+
             foreach (int offsetY in YOffsets)
             {
-                int newX = currentPosition.x + (offsetX * direction);
                 int newY = currentPosition.y + offsetY;
 
-                if (IsValidTile(newX, newY) && IsValidTarget(unit, newX, newY, validTargets))
+                if (IsValidTile(x, newY) && IsValidTarget(unit, x, newY, validTargets))
                 {
-                    targets.Add(GridManager.Instance.Grid[newX, newY]);
+                    targets.Add(GridManager.Instance.Grid[x, newY]);
                 }
             }
         }
@@ -63,21 +66,26 @@ public static class ActionRanges
         return targets;
     }
 
-    private static List<Tile> GetRangedTargets(UnitCard unit, int startX, int direction, List<bool> validTargets)
+    private static List<Tile> GetRangedTargets(UnitCard unit, List<bool> validTargets)
     {
         List<Tile> targets = new List<Tile>();
         Vector2Int currentPosition = unit.CurrentTile.GridPosition;
+        List<int> xOrder = unit.IsPlayer1 ? XOrder_Player1 : XOrder_Player2;
 
-        for (int offsetX = 0; offsetX < 3; offsetX++)
+        foreach (int x in xOrder)
         {
+            if (Mathf.Abs(x - currentPosition.x) > 3)
+            {
+                continue;
+            }
+
             foreach (int offsetY in YOffsets)
             {
-                int newX = startX + (offsetX * direction);
                 int newY = currentPosition.y + offsetY;
 
-                if (IsValidTile(newX, newY) && IsValidTarget(unit, newX, newY, validTargets))
+                if (IsValidTile(x, newY) && IsValidTarget(unit, x, newY, validTargets))
                 {
-                    targets.Add(GridManager.Instance.Grid[newX, newY]);
+                    targets.Add(GridManager.Instance.Grid[x, newY]);
                 }
             }
         }
@@ -85,21 +93,26 @@ public static class ActionRanges
         return targets;
     }
 
-    private static List<Tile> GetReachTargets(UnitCard unit, int startX, int direction, List<bool> validTargets)
+    private static List<Tile> GetReachTargets(UnitCard unit, List<bool> validTargets)
     {
         List<Tile> targets = new List<Tile>();
         Vector2Int currentPosition = unit.CurrentTile.GridPosition;
+        List<int> xOrder = unit.IsPlayer1 ? XOrder_Player1 : XOrder_Player2;
 
-        for (int offsetX = 0; offsetX <= 2; offsetX++)
+        foreach (int x in xOrder)
         {
+            if (Mathf.Abs(x - currentPosition.x) > 2)
+            {
+                continue;
+            }
+
             foreach (int offsetY in YOffsets)
             {
-                int newX = startX + (offsetX * direction);
                 int newY = currentPosition.y + offsetY;
 
-                if (IsValidTile(newX, newY) && IsValidTarget(unit, newX, newY, validTargets))
+                if (IsValidTile(x, newY) && IsValidTarget(unit, x, newY, validTargets))
                 {
-                    targets.Add(GridManager.Instance.Grid[newX, newY]);
+                    targets.Add(GridManager.Instance.Grid[x, newY]);
                 }
             }
         }
@@ -107,21 +120,21 @@ public static class ActionRanges
         return targets;
     }
 
-    private static List<Tile> GetGlobalTargets(UnitCard unit, int startX, int direction, List<bool> validTargets)
+    private static List<Tile> GetGlobalTargets(UnitCard unit, List<bool> validTargets)
     {
         List<Tile> targets = new List<Tile>();
         Vector2Int currentPosition = unit.CurrentTile.GridPosition;
+        List<int> xOrder = unit.IsPlayer1 ? XOrder_Player1 : XOrder_Player2;
 
-        for (int offsetX = 0; offsetX < 6; offsetX++)
+        foreach (int x in xOrder)
         {
             foreach (int offsetY in YOffsets)
             {
-                int newX = startX + (offsetX * direction);
                 int newY = currentPosition.y + offsetY;
 
-                if (IsValidTile(newX, newY) && IsValidTarget(unit, newX, newY, validTargets))
+                if (IsValidTile(x, newY) && IsValidTarget(unit, x, newY, validTargets))
                 {
-                    targets.Add(GridManager.Instance.Grid[newX, newY]);
+                    targets.Add(GridManager.Instance.Grid[x, newY]);
                 }
             }
         }

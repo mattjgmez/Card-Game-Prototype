@@ -16,16 +16,20 @@ public class HandManager : MonoSingleton<HandManager>
     [SerializeField] private int _startingHandSize;
     [SerializeField] private int _cardsDrawnPerTurn;
 
+    private void Update()
+    {
+        #if UNITY_EDITOR
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            DrawCards(1, 1, transform);
+        }
+        #endif
+    }
+
     private void OnEnable()
     {
         TurnManager.Instance.DrawPhase += DrawPhase;
         TurnManager.Instance.StartPhase += DrawStartingCards;
-    }
-
-    private void OnDisable()
-    {
-        TurnManager.Instance.DrawPhase -= DrawPhase;
-        TurnManager.Instance.StartPhase -= DrawStartingCards;
     }
 
     private void OnDrawGizmos()
@@ -134,7 +138,7 @@ public class HandManager : MonoSingleton<HandManager>
             if (cardQueue.Count > 0)
             {
                 CardInfo drawnCard = cardQueue.Dequeue();
-                Debug.Log($"HandManager.DrawCards: Player {player} drew card: {drawnCard.Name}");
+                //Debug.Log($"HandManager.DrawCards: Player {player} drew card: {drawnCard.Name}");
 
                 Card card = InstantiateCard(drawnCard, handTransform).GetComponent<Card>();
                 _cardsInHand[player].Add(card.gameObject);

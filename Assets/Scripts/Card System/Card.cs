@@ -32,7 +32,7 @@ public class Card : EventReceiver
         }
 
         _name = CardInfo.Name;
-        Debug.Log($"Card.InitializeInfo: Name={_name}, Info={CardInfo}");
+        //Debug.Log($"Card.InitializeInfo: Name={_name}, Info={CardInfo}");
     }
 
     protected virtual void Update()
